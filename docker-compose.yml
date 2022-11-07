@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  web:
+    image: nginx:1.23.1
+    ports:
+    - "80:80"
+    volumes:
+      - ./app:/app
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+  php:
+    build:
+      context: .
+      dockerfile: php.Dockerfile
+    volumes:
+      - ./app:/app
+      - ./opcache.init:/usr/php/conf.d/opcache.ini
+    environment:
+      DATABASE_URL: 'mysql://berichtsheft:berichtsheft@mysql:3306/database?serverVersion=mariadb-10.9.3&charset=utf8mb4'
+  mysql:
+    image: mariadb:10.9.3
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+      MYSQL_USER: 'berichtsheft'
+      MYSQL_PASSWORD: 'berichtsheft'
+      MYSQL_DATABASE: 'berichtsheft'
+    ports:
+      - "3306:3306"
+
+volumes:
+  mysqldata: {}
