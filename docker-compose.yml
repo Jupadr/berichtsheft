@@ -16,7 +16,7 @@ services:
       - ./app:/app
       - ./opcache.init:/usr/php/conf.d/opcache.ini
     environment:
-      DATABASE_URL: 'mysql://berichtsheft:berichtsheft@mysql:3306/database?serverVersion=mariadb-10.9.3&charset=utf8mb4'
+      DATABASE_URL: 'mysql://berichtsheft:berichtsheft@mysql:3306/berichtsheft?serverVersion=mariadb-10.9.3&charset=utf8mb4'
   mysql:
     image: mariadb:10.9.3
     environment:
