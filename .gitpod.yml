@@ -5,3 +5,16 @@ vscode:
     - vivaxy.vscode-conventional-commits
     - ms-azuretools.vscode-docker
     - eamodio.gitlens
+
+tasks:
+  - name: Composer Install
+    init: cd app && composer install --dev
+  - name: Database
+    before: docker-compose up -d
+    init: cd app && php bin/console doctrine:migrations:migrate
+    env:
+      DATABASE_URL: mysql://berichtsheft:berichtsheft@localhost:3306/berichtsheft
+
+ports:
+  - name: Website
+    port: 80
