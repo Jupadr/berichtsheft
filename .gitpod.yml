@@ -10,8 +10,7 @@ tasks:
   - name: Composer Install
     init: cd app && composer install --dev
   - name: Database
-    before: docker-compose up -d
-    init: cd app && php docker-compose up -d && bin/console doctrine:migrations:migrate
+    init: cd app && docker-compose up -d && bin/console doctrine:migrations:migrate && docker-compose down
     command: docker-compose up
     env:
       DATABASE_URL: mysql://berichtsheft:berichtsheft@127.0.0.1:3306/berichtsheft
