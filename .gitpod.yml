@@ -11,7 +11,8 @@ tasks:
     init: cd app && composer install --dev
   - name: Database
     before: docker-compose up -d
-    init: cd app && php bin/console doctrine:migrations:migrate
+    init: cd app && php docker-compose up -d && bin/console doctrine:migrations:migrate
+    command: docker-compose up
     env:
       DATABASE_URL: mysql://berichtsheft:berichtsheft@127.0.0.1:3306/berichtsheft
 
