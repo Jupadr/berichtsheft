@@ -13,7 +13,7 @@ tasks:
     before: docker-compose up -d
     init: cd app && php bin/console doctrine:migrations:migrate
     env:
-      DATABASE_URL: mysql://berichtsheft:berichtsheft@localhost:3306/berichtsheft
+      DATABASE_URL: mysql://berichtsheft:berichtsheft@127.0.0.1:3306/berichtsheft
 
 ports:
   - name: Website
