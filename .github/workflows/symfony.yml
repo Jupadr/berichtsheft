@@ -55,6 +55,11 @@ jobs:
         mysql user: berichtsheft # optional, default is 
         # MYSQL_PASSWORD - specified superuser password which user is power for created database
         mysql password: berichtsheft # optional, default is
+    - name: Wait for MySQL
+      run: |
+        while ! mysqladmin ping --host=127.0.0.1 --password=berichtsheft --silent; do
+          sleep 1
+        done
     - name: Run DB Migration
       env:
         DATABASE_URL: mysql://berichtsheft:berichtsheft@127.0.0.1:3306/berichtsheft
