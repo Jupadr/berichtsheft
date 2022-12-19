@@ -1,0 +1,70 @@
+name: Symfony
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  symfony-tests:
+    runs-on: ubuntu-latest
+    steps:
+    #  To automatically get bug fixes and new Php versions for shivammathur/setup-php,
+    # change this to (see https://github.com/shivammathur/setup-php#bookmark-versioning):
+    # uses: shivammathur/setup-php@v2
+    - uses: shivammathur/setup-php@2cb9b829437ee246e9b3cac53555a39208ca6d28
+      with:
+        php-version: '8.2'
+    - uses: actions/checkout@v3
+    - name: Copy .env.test.local
+      run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+    - name: Install Dependencies
+      run: cd app && composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+    - name: Setup MySQL
+      # You may pin to the exact commit or the version.
+      # uses: mirromutth/mysql-action@de1fba8b3f90ce8db80f663a7043be3cf3231248
+      uses: mirromutth/mysql-action@v1.1
+      with:
+        # The port of host
+        host port: 3306
+        # The port of container
+        container port: 3306
+        # --character-set-server - The character set of MySQL server
+        character set server: utf8mb4
+        # --collation-server - The character collation of MySQL server
+        collation server: utf8mb4_general_ci
+        # Version of MySQL to use
+        mysql version: latest
+        # MYSQL_ROOT_PASSWORD - root superuser password
+        mysql root password: berichtsheft # optional, default is 
+        # MYSQL_DATABASE - name for the default database that is created
+        mysql database: berichtsheft # optional, default is 
+        # MYSQL_USER - create the specified user with superuser power for created database
+        mysql user: berichtsheft # optional, default is 
+        # MYSQL_PASSWORD - specified superuser password which user is power for created database
+        mysql password: berichtsheft # optional, default is
+    - name: Wait for MySQL
+      run: |
+        while ! mysqladmin ping --host=127.0.0.1 --password=berichtsheft --silent; do
+          sleep 1
+        done
+    - name: Run DB Migration
+      env:
+        DATABASE_URL: mysql://root:berichtsheft@127.0.0.1:3306/berichtsheft
+      run: cd app && php bin/console doctrine:migrations:migrate
+    - name: Execute tests (Unit and Feature tests) via PHPUnit
+      env:
+        DATABASE_URL: mysql://root:berichtsheft@127.0.0.1:3306/berichtsheft
+      run: cd app && php bin/phpunit
