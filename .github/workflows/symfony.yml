@@ -67,4 +67,4 @@ jobs:
     - name: Execute tests (Unit and Feature tests) via PHPUnit
       env:
         DATABASE_URL: mysql://root:berichtsheft@127.0.0.1:3306/berichtsheft
-      run: vendor/bin/phpunit
+      run: cd app && php bin/phpunit
