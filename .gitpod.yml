@@ -6,6 +6,8 @@ vscode:
     - ms-azuretools.vscode-docker
     - eamodio.gitlens
 
+    - bmewburn.vscode-intelephense-client
+
 tasks:
   - name: Composer Install
     init: cd app && composer install --dev
