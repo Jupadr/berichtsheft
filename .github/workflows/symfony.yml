@@ -58,7 +58,7 @@ jobs:
     - name: Run DB Migration
       env:
         DATABASE_URL: mysql://berichtsheft:berichtsheft@127.0.0.1:3306/berichtsheft
-      run: wait 60 && cd app && php bin/console doctrine:migrations:migrate
+      run: sleep 60 && cd app && php bin/console doctrine:migrations:migrate
     - name: Execute tests (Unit and Feature tests) via PHPUnit
       env:
         DATABASE_URL: mysql://berichtsheft:berichtsheft@127.0.0.1:3306/berichtsheft
