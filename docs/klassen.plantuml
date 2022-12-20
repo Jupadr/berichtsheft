@@ -1,0 +1,24 @@
+@startuml
+class User {
+    ~int id
+    ~string username
+    ~string vorname
+    ~string nachname
+    ~bool instructor
+
+    .. Getter ..
+    +getId(): int
+    +getUsername(): string
+    +getVorname(): string
+    +getNachname(): string
+    +getInstructor(): bool
+
+    .. Setter ..
+    +setId(): void
+    +setUsername(): void
+    +setVorname(): void
+    +setNachname(): void
+    +setInstructor(): void
+}
+
+@enduml
