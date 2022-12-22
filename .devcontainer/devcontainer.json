@@ -3,7 +3,7 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "options": {
-        "dockerDashComposer": "v2"
+        "dockerDashComposeVersion": "v2"
       }
     },
     "ghcr.io/devcontainers/features/php:1": {}
