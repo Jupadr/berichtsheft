@@ -8,12 +8,6 @@
     "ghcr.io/devcontainers/features/php:1": {}
     }
   },
-  "portsAttribute": {
-    "80": {
-      "label": "Webserver",
-      "elevateIfNeeded": true
-    }
-  },
   "containerEnv": {
     "DATABASE_URL": "mysql://berichtsheft:berichtsheft@127.0.0.1:3306/berichtsheft"
   },
