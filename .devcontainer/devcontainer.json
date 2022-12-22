@@ -5,8 +5,7 @@
       "options": {
         "dockerDashComposeVersion": "v2"
       }
-    },
-    "ghcr.io/devcontainers/features/php:1": {}
+    }
   },
   "forwardPorts": [80],
   "portsAttribute": {
