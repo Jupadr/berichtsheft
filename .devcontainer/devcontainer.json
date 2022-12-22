@@ -1,7 +1,26 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerDashComposeVersion": "v2"
+    },
     "ghcr.io/devcontainers/features/php:1": {}
-  }
+  },
+  "forwardPorts": [80],
+  "portsAttribute": {
+    "80": {
+      "label": "Webserver",
+      "elevateIfNeeded": true
+    }
+  },
+  "containerEnv": {
+    "DATABASE_URL": "mysql://berichtsheft:berichtsheft@127.0.0.1:3306/berichtsheft"
+  },
+  "onCreateCommand": {
+    "Install PHP dependancies": "cd app; composer install",
+    "Install NPM dependencies": "cd app; npm install --dev",
+    "Start containers": "docker-compose up -d",
+    "Run database migration": "cd app; docker-compose up -d; sleep 10; bin/console doctrine:migrations:migrate -n; docker-compose stop"
+  },
+  "postStartCommand": "docker-compose up"
 }
