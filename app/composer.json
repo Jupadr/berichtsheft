@@ -14,12 +14,17 @@
         "symfony/console": "6.1.*",
         "symfony/dotenv": "6.1.*",
         "symfony/flex": "^2",
+        "symfony/form": "^6.2",
         "symfony/framework-bundle": "6.1.*",
         "symfony/runtime": "6.1.*",
+        "symfony/security-bundle": "6.1.*",
+        "symfony/twig-bundle": "6.1.*",
         "symfony/web-profiler-bundle": "6.1.*",
         "symfony/webpack-encore-bundle": "^1.16",
         "symfony/yaml": "6.1.*",
-        "twbs/bootstrap": "^5.2"
+        "twbs/bootstrap": "^5.2",
+        "twig/extra-bundle": "^2.12|^3.0",
+        "twig/twig": "^2.12|^3.0"
     },
     "config": {
         "allow-plugins": {
