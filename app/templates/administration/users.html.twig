@@ -24,8 +24,8 @@
             {% for user in users %}
                 <tr>
                     <td>
-                        <a href="{{ path('administration_editUser', {user: user.id}) }}">Bearbeiten</a>
-                        <a href="{{ path('administration_deleteUser', {user: user.id}) }}">Löschen</a>
+                        <a href="{{ path('administration_editUser', {userId: user.id}) }}">Bearbeiten</a>
+                        <a href="{{ path('administration_deleteUser', {userId: user.id}) }}">Löschen</a>
                     </td>
                     <td>{{user.id}}</td>
                     <td>{{user.username}}</td>

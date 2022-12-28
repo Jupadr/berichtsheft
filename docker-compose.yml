@@ -14,7 +14,8 @@ services:
       dockerfile: php.Dockerfile
     volumes:
       - ./app:/app
-      - ./opcache.init:/usr/php/conf.d/opcache.ini
+      - ./opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
+      - ./xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
     environment:
       DATABASE_URL: 'mysql://berichtsheft:berichtsheft@mysql:3306/berichtsheft?serverVersion=mariadb-10.9.3&charset=utf8mb4'
   mysql:

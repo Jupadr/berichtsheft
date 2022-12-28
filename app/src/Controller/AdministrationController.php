@@ -38,15 +38,13 @@ class AdministrationController extends AbstractController
     #[Route('administration/delete_user/{userId}', name: 'administration_deleteUser')]
     public function deleteUser(int $userId): Response
     {
-        $response = new Response(content: $userId, status: 501);
-        return $response;
+        return new Response(content: $userId, status: 501);
     }
 
     #[Route('administration/edit_user/{userId}', name: 'administration_editUser')]
     public function editUser(int $userId): Response
     {
-        $response = new Response(content: $userId, status: 501);
-        return $response;
+        return new Response(content: $userId, status: 501);
     }
 
     #[Route('administration/new_user', name: 'administration_newUser')]
@@ -80,7 +78,7 @@ class AdministrationController extends AbstractController
                 'required' => true,
                 'mapped' => false,
             ])
-            ->add('save',  SubmitType::class, [
+            ->add('save', SubmitType::class, [
                 'label' => 'Benutzer erstellen'
             ])
             ->getForm();
@@ -88,9 +86,9 @@ class AdministrationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $form->getData();
-            $password_repeat = $request->get('form')['password_repeat'];
-            if ($user->getPassword() !== $password_repeat) {
-                throw new RuntimeException("Passwörter müssen übereinstimmen: ".$user->getPassword()." != $password_repeat");
+            $passwordRepeat = $request->get('form')['password_repeat'];
+            if ($user->getPassword() !== $passwordRepeat) {
+                throw new RuntimeException("Passwörter müssen übereinstimmen: ".$user->getPassword()." != $passwordRepeat");
             }
             $hashedPassword = $passwordHasher->hashPassword($user, $user->getPassword());
             $user->setPassword($hashedPassword);
