@@ -8,9 +8,14 @@ vscode:
 
     - bmewburn.vscode-intelephense-client
 
+    - mblode.twig-language
+
 tasks:
   - name: Composer Install
-    init: cd app && composer install --dev
+    init: cd app && composer install
+  - name: NPM Install
+    init: cd app && npm install --dev
+    command: cd app && npm run watch
   - name: Database
     init: cd app && docker-compose up -d && sleep 10 && bin/console doctrine:migrations:migrate -n && docker-compose stop
     command: docker-compose up
@@ -20,3 +25,9 @@ tasks:
 ports:
   - name: Website
     port: 80
+    onOpen: ignore
+  - name: Database
+    port: 3306
+    onOpen: ignore
+
+
