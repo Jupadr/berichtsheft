@@ -38,9 +38,43 @@ class AdministrationController extends AbstractController
     }
     
     #[Route('administration/delete_user/{userId}', name: 'administration_deleteUser')]
-    public function deleteUser(int $userId): Response
-    {
-        return new Response(content: $userId, status: 501);
+    public function deleteUser(
+        Request $request,
+        ManagerRegistry $doctrine,
+        EntityManagerInterface $em,
+        int $userId
+    ): Response {
+        $user = $doctrine->getRepository(User::class)->findOneBy(
+            ['id' => $userId]
+        );
+        
+        if ($user === null) {
+            return new Response(content: 'User not found', status: 404);
+        }
+        
+        $form = $this->createFormBuilder()
+            ->add('delete', CheckboxType::class, [
+                'label'    => 'Ja',
+                'required' => true,
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => 'Benutzer löschen',
+            ])
+            ->getForm();
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($request->get('form')['delete']) {
+                $em->remove($user);
+                $em->flush();
+            }
+            return $this->redirectToRoute('administration_users');
+        }
+        
+        $formView = $form->createView();
+        return $this->render('administration/deleteUser.html.twig', [
+            'form' => $formView,
+        ]);
     }
     
     #[Route('administration/edit_user/{userId}', name: 'administration_editUser')]
@@ -76,7 +110,7 @@ class AdministrationController extends AbstractController
             ])
             ->add('instructor', CheckboxType::class, [
                 'label'    => 'Ausbilder',
-                'required' => true,
+                'required' => false,
             ])
             ->add('password', PasswordType::class, [
                 'label'      => 'Neues Passwort',
@@ -98,7 +132,7 @@ class AdministrationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $newUser = $form->getData();
             $newUser->setPassword($user->getPassword());
-            $passwordRepeat = $request->get('form') ['password_repeat'];
+            $passwordRepeat = $request->get('form')['password_repeat'];
             if ($newUser->getPassword() !== ''
                 && $newUser->getPassword() === $passwordRepeat
             ) {
@@ -143,7 +177,7 @@ class AdministrationController extends AbstractController
             ])
             ->add('instructor', CheckboxType::class, [
                 'label'    => 'Ausbilder',
-                'required' => true,
+                'required' => false,
             ])
             ->add('password', PasswordType::class, [
                 'label'    => 'Passwort',
