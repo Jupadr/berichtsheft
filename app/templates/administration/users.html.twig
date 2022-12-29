@@ -20,6 +20,22 @@
     </style>
 
     <div class="example-wrapper">
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('info') %}
+            <div class="alert alert-info" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+
         <h1>Benutzerliste</h1>
 
         <table class="table">

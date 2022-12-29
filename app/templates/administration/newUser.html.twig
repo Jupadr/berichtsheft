@@ -20,6 +20,12 @@
     </style>
 
     <div class="example-wrapper">
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        
         <h1>Neuer Benutzer</h1>
 
         {{ form_start(form) }}
