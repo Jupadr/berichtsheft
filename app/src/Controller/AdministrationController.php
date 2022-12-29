@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
-use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -57,9 +56,7 @@ class AdministrationController extends AbstractController
                 'label'    => 'Ja',
                 'required' => true,
             ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'Benutzer löschen',
-            ])
+            ->add('submit', SubmitType::class, ['label' => 'Benutzer löschen',])
             ->getForm();
         $form->handleRequest($request);
         
@@ -67,6 +64,12 @@ class AdministrationController extends AbstractController
             if ($request->get('form')['delete']) {
                 $em->remove($user);
                 $em->flush();
+                $this->addFlash(
+                    'success',
+                    'Benutzer wurde erfolgreich gelöscht'
+                );
+            } else {
+                $this->addFlash('info', 'Benutzer wurde nicht gelöscht');
             }
             return $this->redirectToRoute('administration_users');
         }
@@ -133,6 +136,7 @@ class AdministrationController extends AbstractController
             $newUser = $form->getData();
             $newUser->setPassword($user->getPassword());
             $passwordRepeat = $request->get('form')['password_repeat'];
+            
             if ($newUser->getPassword() !== ''
                 && $newUser->getPassword() === $passwordRepeat
             ) {
@@ -141,9 +145,18 @@ class AdministrationController extends AbstractController
                     $newUser->getPassword()
                 );
                 $newUser->setPassword($hashedPassword);
+            } elseif ($newUser->getPassword() !== '') {
+                $this->addFlash('error', 'Passwörter müssen übereinstimmen');
+                
+                $formView = $form->createView();
+                return $this->render('administration/changeUser.html.twig', [
+                    'form' => $formView,
+                ]);
             }
             $em->persist($newUser);
             $em->flush();
+            
+            $this->addFlash('success', 'Benutzer erfolgreich bearbeitet');
             
             return $this->redirectToRoute('administration_users');
         }
@@ -197,12 +210,16 @@ class AdministrationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $user           = $form->getData();
             $passwordRepeat = $request->get('form')['password_repeat'];
+            
             if ($user->getPassword() !== $passwordRepeat) {
-                throw new RuntimeException(
-                    "Passwörter müssen übereinstimmen: " . $user->getPassword()
-                    . " != $passwordRepeat"
-                );
+                $this->addFlash('error', 'Passwörter müssen übereinstimmen');
+                
+                $formView = $form->createView();
+                return $this->render('administration/newUser.html.twig', [
+                    'form' => $formView,
+                ]);
             }
+            
             $hashedPassword = $passwordHasher->hashPassword(
                 $user,
                 $user->getPassword()
@@ -211,6 +228,8 @@ class AdministrationController extends AbstractController
             
             $em->persist($user);
             $em->flush();
+            
+            $this->addFlash('success', 'Benutzer erfolgreich erstellt');
             
             return $this->redirectToRoute('administration_users');
         }

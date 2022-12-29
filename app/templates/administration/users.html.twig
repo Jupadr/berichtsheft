@@ -1,16 +1,45 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+    {{ encore_entry_link_tags('bootstrap') }}
+{% endblock %}
+
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <style>
+			.example-wrapper {
+				margin: 1em auto;
+				max-width: 800px;
+				width: 95%;
+				font: 18px/1.5 sans-serif;
+			}
 
-<div class="example-wrapper">
-    <h1>Benutzerliste</h1>
+			.example-wrapper code {
+				background: #F5F5F5;
+				padding: 2px 6px;
+			}
+    </style>
 
-    <table border="1">
-        <thead>
+    <div class="example-wrapper">
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('info') %}
+            <div class="alert alert-info" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <h1>Benutzerliste</h1>
+
+        <table class="table">
+            <thead>
             <tr>
                 <th>Aktionen</th>
                 <th>ID</th>
@@ -19,22 +48,22 @@
                 <th>Nachname</th>
                 <th>Ausbilder</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             {% for user in users %}
                 <tr>
                     <td>
                         <a href="{{ path('administration_editUser', {userId: user.id}) }}">Bearbeiten</a>
                         <a href="{{ path('administration_deleteUser', {userId: user.id}) }}">Löschen</a>
                     </td>
-                    <td>{{user.id}}</td>
-                    <td>{{user.username}}</td>
-                    <td>{{user.firstname}}</td>
-                    <td>{{user.lastname}}</td>
-                    <td>{{user.instructor ? 'Ja' : ''}}</td>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.firstname }}</td>
+                    <td>{{ user.lastname }}</td>
+                    <td>{{ user.instructor ? 'Ja' : '' }}</td>
                 </tr>
             {% endfor %}
-        </tbody>
-    </table>
-</div>
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
