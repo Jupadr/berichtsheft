@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -111,9 +112,17 @@ class AdministrationController extends AbstractController
                 'label'    => 'Nachname',
                 'required' => true,
             ])
-            ->add('instructor', CheckboxType::class, [
-                'label'    => 'Ausbilder',
-                'required' => false,
+            ->add('roles', ChoiceType::class, [
+                'label'    => 'admin',
+                'required' => true,
+                'multiple' => true,
+                'expanded' => true,
+                'choices'  => [
+                    'User'      => 'ROLE_USER',
+                    'Admin'     => 'ROLE_ADMIN',
+                    'Azubi'     => 'ROLE_AZUBI',
+                    'Ausbilder' => 'ROLE_AUSBILDER',
+                ],
             ])
             ->add('password', PasswordType::class, [
                 'label'      => 'Neues Passwort',
@@ -124,7 +133,7 @@ class AdministrationController extends AbstractController
                 'label'      => 'Passwort wiederholen',
                 'required'   => false,
                 'mapped'     => false,
-                'empty_data' => '',
+                'empty_data' => (bool)($request->get('form')['admin'] ?? false),
             ])
             ->add('save', SubmitType::class, [
                 'label' => 'Benutzer bearbeiten',
@@ -134,7 +143,7 @@ class AdministrationController extends AbstractController
         
         if ($form->isSubmitted() && $form->isValid()) {
             $newUser = $form->getData();
-            $newUser->setPassword($user->getPassword());
+            
             $passwordRepeat = $request->get('form')['password_repeat'];
             
             if ($newUser->getPassword() !== ''
@@ -145,7 +154,7 @@ class AdministrationController extends AbstractController
                     $newUser->getPassword()
                 );
                 $newUser->setPassword($hashedPassword);
-            } elseif ($newUser->getPassword() !== '') {
+            } elseif ($user->getPassword() !== '') {
                 $this->addFlash('error', 'Passwörter müssen übereinstimmen');
                 
                 $formView = $form->createView();
