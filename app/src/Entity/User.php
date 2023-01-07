@@ -23,19 +23,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private array   $roles    = [];
     
     /**
-     * @var string The hashed password
+     * @var ?string The hashed password
      */
     #[ORM\Column]
-    private ?string $password   = null;
+    private ?string $password  = null;
     
     #[ORM\Column(length: 255)]
-    private ?string $firstname  = null;
+    private ?string $firstname = null;
     
     #[ORM\Column(length: 255)]
-    private ?string $lastname   = null;
-    
-    #[ORM\Column]
-    private ?bool   $instructor = null;
+    private ?string $lastname  = null;
     
     public function getId(): ?int
     {
@@ -128,18 +125,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastname(string $lastname): self
     {
         $this->lastname = $lastname;
-        
-        return $this;
-    }
-    
-    public function isInstructor(): ?bool
-    {
-        return $this->instructor;
-    }
-    
-    public function setInstructor(bool $instructor): self
-    {
-        $this->instructor = $instructor;
         
         return $this;
     }

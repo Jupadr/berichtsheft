@@ -11,8 +11,10 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -94,56 +96,16 @@ class AdministrationController extends AbstractController
         );
         
         if ($user === null) {
-            return new Response(content: 'User not found', status: 404);
+            throw new HttpException(404, 'User not found');
         }
         
         $user->eraseCredentials();
         
-        $form = $this->createFormBuilder($user)
-            ->add('username', TextType::class, [
-                'label'    => 'Benutzername',
-                'required' => true,
-            ])
-            ->add('firstname', TextType::class, [
-                'label'    => 'Vorname',
-                'required' => true,
-            ])
-            ->add('lastname', TextType::class, [
-                'label'    => 'Nachname',
-                'required' => true,
-            ])
-            ->add('roles', ChoiceType::class, [
-                'label'    => 'admin',
-                'required' => true,
-                'multiple' => true,
-                'expanded' => true,
-                'choices'  => [
-                    'User'      => 'ROLE_USER',
-                    'Admin'     => 'ROLE_ADMIN',
-                    'Azubi'     => 'ROLE_AZUBI',
-                    'Ausbilder' => 'ROLE_AUSBILDER',
-                ],
-            ])
-            ->add('password', PasswordType::class, [
-                'label'      => 'Neues Passwort',
-                'required'   => false,
-                'empty_data' => '',
-            ])
-            ->add('password_repeat', PasswordType::class, [
-                'label'      => 'Passwort wiederholen',
-                'required'   => false,
-                'mapped'     => false,
-                'empty_data' => (bool)($request->get('form')['admin'] ?? false),
-            ])
-            ->add('save', SubmitType::class, [
-                'label' => 'Benutzer bearbeiten',
-            ])
-            ->getForm();
+        $form = $this->genForm($user, AdministrationUserSubmitType::EDIT);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
-            $newUser = $form->getData();
-            
+            $newUser        = $form->getData();
             $passwordRepeat = $request->get('form')['password_repeat'];
             
             if ($newUser->getPassword() !== ''
@@ -176,15 +138,9 @@ class AdministrationController extends AbstractController
         ]);
     }
     
-    #[Route('administration/new_user', name: 'administration_newUser')]
-    public function newUser(
-        Request $request,
-        UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $em
-    ): Response {
-        $user = new User();
-        
-        $form = $this->createFormBuilder($user)
+    private function genForm(User $user, AdministrationUserSubmitType $type): FormInterface
+    {
+        return $this->createFormBuilder($user)
             ->add('username', TextType::class, [
                 'label'    => 'Benutzername',
                 'required' => true,
@@ -197,23 +153,45 @@ class AdministrationController extends AbstractController
                 'label'    => 'Nachname',
                 'required' => true,
             ])
-            ->add('instructor', CheckboxType::class, [
-                'label'    => 'Ausbilder',
-                'required' => false,
+            ->add('roles', ChoiceType::class, [
+                'label'    => 'admin',
+                'required' => true,
+                'multiple' => true,
+                'expanded' => true,
+                'choices'  => [
+                    'User'      => 'ROLE_USER',
+                    'Admin'     => 'ROLE_ADMIN',
+                    'Azubi'     => 'ROLE_AZUBI',
+                    'Ausbilder' => 'ROLE_AUSBILDER',
+                ],
             ])
             ->add('password', PasswordType::class, [
                 'label'    => 'Passwort',
-                'required' => true,
+                'required' => $type === AdministrationUserSubmitType::CREATE,
             ])
             ->add('password_repeat', PasswordType::class, [
                 'label'    => 'Passwort wiederholen',
-                'required' => true,
+                'required' => $type === AdministrationUserSubmitType::CREATE,
                 'mapped'   => false,
             ])
             ->add('save', SubmitType::class, [
-                'label' => 'Benutzer erstellen',
+                'label' => match ($type) {
+                    AdministrationUserSubmitType::CREATE => 'Benutzer erstellten',
+                    AdministrationUserSubmitType::EDIT => 'Benutzer bearbeiten',
+                },
             ])
             ->getForm();
+    }
+    
+    #[Route('administration/new_user', name: 'administration_newUser')]
+    public function newUser(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $em
+    ): Response {
+        $user = new User();
+        
+        $form = $this->genForm($user, AdministrationUserSubmitType::CREATE);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
@@ -248,5 +226,13 @@ class AdministrationController extends AbstractController
             'form' => $formView,
         ]);
     }
+    
+}
+
+enum AdministrationUserSubmitType
+{
+    
+    case CREATE;
+    case EDIT;
     
 }
