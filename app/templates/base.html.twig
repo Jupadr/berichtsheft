@@ -1,19 +1,81 @@
 <!DOCTYPE html>
 <html lang="de">
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
-        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
-        {% block stylesheets %}
-            {{ encore_entry_link_tags('app') }}
-        {% endblock %}
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+    {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+        {{ encore_entry_link_tags('bootstrap') }}
+    {% endblock %}
 
-        {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+    <style>
+			.example-wrapper {
+				margin: 1em auto;
+				max-width: 800px;
+				width: 95%;
+				font: 18px/1.5 sans-serif;
+			}
+
+			.example-wrapper code {
+				background: #F5F5F5;
+				padding: 2px 6px;
+			}
+    </style>
+
+    {% block javascripts %}
+        {{ encore_entry_script_tags('app') }}
+    {% endblock %}
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_administration') }}">Administration</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('app_dashboard') }}">Dashboard</a>
+                </li>
+            </ul>
+        </div>
+        <div class="d-flex">
+            <div class="container float-right">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item right-text-pad">
+                        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                            <a class="btn btn-primary" href="{{ path('app_logout') }}">Logout</a>
+                        {% else %}
+                            <a class="btn btn-primary" href="{{ path('app_login') }}">Login</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+<main>
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('info') %}
+        <div class="alert alert-info" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% block body %}{% endblock %}
+</main>
+<footer>
+
+</footer>
+</body>
 </html>

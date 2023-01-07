@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('bootstrap') }}
+{% endblock %}
+
+{% block body %}
+    <div class="example-wrapper">
+        <form action="{{ path('app_login') }}" method="post">
+            <div class="mb-3">
+                <label class="form-label">Benutzername:</label>
+                <input type="text" name="_username" value="{{ lastUsername }}" class="form-control"/>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Passwort:</label>
+                <input type="password" name="_password" class="form-control"/>
+            </div>
+
+            <input type="hidden" name="_target_path" value="/"/>
+
+            <button type="submit" class="btn form-control btn-primary">Login</button>
+        </form>
+    </div>
+{% endblock %}
