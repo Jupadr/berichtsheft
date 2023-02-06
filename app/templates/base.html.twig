@@ -9,7 +9,7 @@
         {{ encore_entry_link_tags('app') }}
         {{ encore_entry_link_tags('bootstrap') }}
     {% endblock %}
-
+    ä
     <style>
 			.example-wrapper {
 				margin: 1em auto;
@@ -48,7 +48,8 @@
                         {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                             <a class="btn btn-primary" href="{{ path('app_logout') }}">Logout</a>
                         {% else %}
-                            <a class="btn btn-primary" href="{{ path('app_login') }}">Login</a>
+                            <a class="btn btn-primary" href="{{ path('app_createUser') }}">Registrieren</a>
+                            <a class="btn btn-secondary" href="{{ path('app_login') }}">Login</a>
                         {% endif %}
                     </li>
                 </ul>
