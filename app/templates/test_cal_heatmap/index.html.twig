@@ -1,0 +1,11 @@
+{# {% extends 'base.html.twig' %} #}
+
+{% block javascripts %}
+    {{encore_entry_script_tags('calHeatmap')}}
+{% endblock %}
+<link rel="stylesheet" href="https://unpkg.com/cal-heatmap@4.0.0-beta.4/dist/cal-heatmap.css"></script>
+{% block title %}Hello TestCalHeatmapController!{% endblock %}
+
+{% block body %}
+<div id="cal-heatmap"></div>
+{% endblock %}
