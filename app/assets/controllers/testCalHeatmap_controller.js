@@ -32,22 +32,32 @@ cal.paint({
   },
   data: {
     source: [
-      {date: '2020-08-28', value: 10},
-      {date: '2020-07-20', value: 200},
-    ]
+      {date: '2020-01-01EST', value: 5},
+      {date: '2020-01-02EST', value: 14},
+      {date: '2020-01-03EST', value: 22},
+      {date: '2020-01-04EST', value: 25},
+      {date: '2020-01-05EST', value: 0},
+      {date: '2020-01-06EST', value: 0},
+      {date: '2020-01-07EST', value: 0},
+      {date: '2020-01-08EST', value: 0},
+      {date: '2020-01-09EST', value: 0},
+    ],
+    x: 'date',
+    y: 'value',
+    groupY: 'sum'
   },
   scale: {
     as: 'color',
-    type: 'linear',
-    scheme: 'PRGn',
-    domain: [0, 40]
+    type: 'linear', //
+    scheme: 'Turbo',
+    domain: [0, 30],
   }
 }, [
   [
     Tooltip,
     {
       enabled: true,
-      text: (timestamp, value, dayjsDate) => `${dayjsDate.toString()}`,
+      text: (timestamp, value, dayjsDate) => `${dayjsDate.toString()}, ${value}`,
       placement: 'right',
       modifiers: [
         {
