@@ -3,11 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\ApprenticeshipRepository;
-use App\Repository\ApprenticeshopRepository;
+use Cassandra\Date;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
-use Symfony\Component\Uid\UuidV4;
 
 #[ORM\Entity(repositoryClass: ApprenticeshipRepository::class)]
 class Apprenticeship
@@ -19,63 +18,113 @@ class Apprenticeship
     private ?int $id;
 
     #[ORM\Column(type: 'string')]
-    private string $inviteLink;
-    
+    private string $inviteToken;
+
     #[ORM\Column(length: 180, unique: true)]
-    private ?string $AzubiName;
+    private ?string $azubiId;
 
-    #[ORM\Column(type: 'datetime')]
-    private ?DateTime  $startApprenticeship;
+    #[ORM\Column(type: 'integer')]
+    private ?int $instructorId;
 
-    #[ORM\Column(type: 'datetime')]
-    private ?DateTime $endApprenticeship;
+    #[ORM\Column(type: 'date')]
+    private ?Date  $startApprenticeship;
 
-    public function getId(): int
+    #[ORM\Column(type: 'date')]
+    private ?Date $endApprenticeship;
+
+    /**
+     * @return int|null
+     */
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getInviteLink(): string
+    /**
+     * @param int|null $id
+     */
+    public function setId(?int $id): void
     {
-        return $this->inviteLink;
+        $this->id = $id;
     }
 
-    public function setInviteLink(string $inviteLink)
+    /**
+     * @return string
+     */
+    public function getInviteToken(): string
     {
-        $this->inviteLink = $inviteLink;
+        return $this->inviteToken;
     }
 
-    public function getName(): string
+    /**
+     * @param string $inviteToken
+     */
+    public function setInviteToken(string $inviteToken): void
     {
-        return $this->AzubiName;
+        $this->inviteToken = $inviteToken;
     }
 
-    public function setName(string $name)
+    /**
+     * @return string|null
+     */
+    public function getAzubiId(): ?string
     {
-        $this->AzubiName = $name;
+        return $this->azubiId;
     }
 
-    public function getStartApprenticeship(): DateTime
+    /**
+     * @param string|null $azubiId
+     */
+    public function setAzubiId(?string $azubiId): void
+    {
+        $this->azubiId = $azubiId;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getInstructorId(): ?int
+    {
+        return $this->instructorId;
+    }
+
+    /**
+     * @param int|null $instructorId
+     */
+    public function setInstructorId(?int $instructorId): void
+    {
+        $this->instructorId = $instructorId;
+    }
+
+    /**
+     * @return Date|null
+     */
+    public function getStartApprenticeship(): ?Date
     {
         return $this->startApprenticeship;
     }
 
-    public function setStartApprenticeship(datetime $startApprenticeship)
+    /**
+     * @param Date|null $startApprenticeship
+     */
+    public function setStartApprenticeship(?Date $startApprenticeship): void
     {
-        $this->startApprenticeship =  $startApprenticeship;
+        $this->startApprenticeship = $startApprenticeship;
     }
 
-    public function getEndApprenticeship(): DateTime
+    /**
+     * @return Date|null
+     */
+    public function getEndApprenticeship(): ?Date
     {
-        return $this->startApprenticeship;
+        return $this->endApprenticeship;
     }
 
-    public function setEndApprenticeship(DateTime $endApprenticeship)
+    /**
+     * @param Date|null $endApprenticeship
+     */
+    public function setEndApprenticeship(?Date $endApprenticeship): void
     {
         $this->endApprenticeship = $endApprenticeship;
     }
-
-
-    
-
 }

@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -29,8 +30,8 @@ class DashboardController extends AbstractController
     public function addAzubi($apprenticeship): FormInterface
     {
         return $this->createFormBuilder()
-        ->add('AzubiName', TextType::class, [
-            'label' => 'Azubi Name',
+        ->add('azubiId', IntegerType::class, [
+            'label' => 'Azubi Id',
             'required' => true,
         ])
         ->add('startYear', DateTimeType::class, [
@@ -53,12 +54,12 @@ class DashboardController extends AbstractController
         EntityManagerInterface $em,
     ): Response{
         $uuid = Uuid::v4();
-
-        
-        
         $apprenticeship = new Apprenticeship;
-        $apprenticeship->setInviteLink($uuid->toRfc4122());
-        
+        $apprenticeship->setInviteToken($uuid->toRfc4122());
+        $user = $this->getUser();
+        if (in_array('ROLE_AUSBILDER', $user->getRoles(), true)) {
+            $apprenticeship->setInstructorId($user);
+        }
         $form = $this->addAzubi($apprenticeship);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {

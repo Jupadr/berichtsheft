@@ -44,14 +44,19 @@
         <div class="d-flex">
             <div class="container float-right">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item right-text-pad">
+
                         {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                            <a class="btn btn-primary" href="{{ path('app_logout') }}">Logout</a>
-                        {% else %}
-                            <a class="btn btn-primary" href="{{ path('app_createUser') }}">Registrieren</a>
-                            <a class="btn btn-secondary" href="{{ path('app_login') }}">Login</a>
+                            <li class="nav-item right-text-pad">
+                                <a class="btn btn-primary" href="{{ path('app_logout') }}">Logout</a>
+                            </li>
+                                {% else %}
+                            <li class="nav-item right-text-pad">
+                                <a class="btn btn-primary" href="{{ path('app_registration./b') }}">Registrieren</a>
+                            </li>
+                            <li class="nav-item right-text-pad">
+                                <a class="btn btn-secondary" href="{{ path('app_login') }}">Login</a>
+                            </li>
                         {% endif %}
-                    </li>
                 </ul>
             </div>
         </div>
