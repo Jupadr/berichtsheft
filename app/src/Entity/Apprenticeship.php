@@ -7,6 +7,8 @@ use App\Repository\ApprenticeshopRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
+use Symfony\Component\Uid\UuidV4;
+
 #[ORM\Entity(repositoryClass: ApprenticeshipRepository::class)]
 class Apprenticeship
 {
@@ -16,8 +18,8 @@ class Apprenticeship
     #[ORM\Column]
     private ?int $id;
 
-    #[ORM\Column()]
-    private ?UuidType $inviteLink;
+    #[ORM\Column(type: 'string')]
+    private string $inviteLink;
     
     #[ORM\Column(length: 180, unique: true)]
     private ?string $AzubiName;
@@ -33,12 +35,12 @@ class Apprenticeship
         return $this->id;
     }
 
-    public function getInviteLink(): UuidType
+    public function getInviteLink(): string
     {
         return $this->inviteLink;
     }
 
-    public function setInviteLink(UuidType $inviteLink)
+    public function setInviteLink(string $inviteLink)
     {
         $this->inviteLink = $inviteLink;
     }
