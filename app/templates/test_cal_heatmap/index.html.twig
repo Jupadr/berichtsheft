@@ -15,4 +15,11 @@
 
 {% block body %}
     <div id="cal-heatmap" style="margin: 2em;"></div>
+    <div id="day-sign"></div>
+    <div id="cal-data" style="display: none">{{ caldata }}</div>
+    <script>
+      window.onload = () => {
+        window.genCalHeatmap()
+      }
+    </script>
 {% endblock %}
