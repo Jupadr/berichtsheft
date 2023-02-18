@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('heatmap-css') }}
+    {{ encore_entry_link_tags('bootstrap') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('popper') }}
+    {{ encore_entry_script_tags('d3') }}
+    {{ encore_entry_script_tags('calHeatmap') }}
+{% endblock %}
+
+{% block title %}Hello TestCalHeatmapController!{% endblock %}
+
+{% block body %}
+    <div id="cal-heatmap" style="margin: 2em;"></div>
+    <div id="day-sign"></div>
+    <div id="cal-data" style="display: none">{{ caldata }}</div>
+    <script>
+      window.onload = () => {
+        window.genCalHeatmap()
+      }
+    </script>
+{% endblock %}
