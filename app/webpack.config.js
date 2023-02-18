@@ -21,8 +21,13 @@ Encore
    * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
    */
   .addEntry('app', './assets/app.js')
+  .addEntry('calHeatmap', './assets/controllers/testCalHeatmap_controller.js')
+  .addEntry('heatmap-js', './assets/cal-heatmap.min.js')
+  .addEntry('popper', './assets/popper.min.js')
+  .addEntry('d3', './assets/d3.v7.min.js')
   .addEntry('registration', './assets/styles/registration-style.css')
   .addEntry('bootstrap', './assets/styles/bootstrap.css')
+  .addEntry('heatmap-css', './assets/cal-heatmap.css')
   
   // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
   .enableStimulusBridge('./assets/controllers.json')
@@ -73,6 +78,5 @@ Encore
 
 // uncomment if you're having problems with a jQuery plugin
 //.autoProvidejQuery()
-
 
 module.exports = Encore.getWebpackConfig()
