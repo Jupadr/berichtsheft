@@ -6,7 +6,6 @@ use App\Repository\ApprenticeshipRepository;
 use Cassandra\Date;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Types\UuidType;
 
 #[ORM\Entity(repositoryClass: ApprenticeshipRepository::class)]
 class Apprenticeship
@@ -15,23 +14,26 @@ class Apprenticeship
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id;
-
-    #[ORM\Column(type: 'string')]
-    private string $inviteToken;
-
-    #[ORM\Column(length: 180, unique: true)]
-    private ?string $azubiId;
-
-    #[ORM\Column(type: 'integer')]
-    private ?int $instructorId;
-
+    private ?int      $id;
+    
+    #[ORM\Column(name: 'invite_token', length: 255, unique: true)]
+    private string    $inviteToken;
+    
     #[ORM\Column(type: 'date')]
-    private ?Date  $startApprenticeship;
-
+    private ?DateTime $startApprenticeship;
+    
     #[ORM\Column(type: 'date')]
-    private ?Date $endApprenticeship;
-
+    private ?DateTime $endApprenticeship;
+    
+    #[ORM\Column(name: 'azubi_id', nullable: true)]
+    #[ORM\ManyToOne(inversedBy: 'apprenticeships')]
+    private ?int      $azubiId     = null;
+    
+    #[ORM\Column(name: 'ausbilder_id')]
+    #[ORM\ManyToOne(inversedBy: 'courses')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?int      $ausbilderId = null;
+    
     /**
      * @return int|null
      */
@@ -39,15 +41,15 @@ class Apprenticeship
     {
         return $this->id;
     }
-
+    
     /**
-     * @param int|null $id
+     * @param  int|null  $id
      */
     public function setId(?int $id): void
     {
         $this->id = $id;
     }
-
+    
     /**
      * @return string
      */
@@ -55,76 +57,69 @@ class Apprenticeship
     {
         return $this->inviteToken;
     }
-
+    
     /**
-     * @param string $inviteToken
+     * @param  string  $inviteToken
      */
     public function setInviteToken(string $inviteToken): void
     {
         $this->inviteToken = $inviteToken;
     }
-
-    /**
-     * @return string|null
-     */
-    public function getAzubiId(): ?string
-    {
-        return $this->azubiId;
-    }
-
-    /**
-     * @param string|null $azubiId
-     */
-    public function setAzubiId(?string $azubiId): void
-    {
-        $this->azubiId = $azubiId;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getInstructorId(): ?int
-    {
-        return $this->instructorId;
-    }
-
-    /**
-     * @param int|null $instructorId
-     */
-    public function setInstructorId(?int $instructorId): void
-    {
-        $this->instructorId = $instructorId;
-    }
-
+    
     /**
      * @return Date|null
      */
-    public function getStartApprenticeship(): ?Date
+    public function getStartApprenticeship(): ?DateTime
     {
         return $this->startApprenticeship;
     }
-
+    
     /**
-     * @param Date|null $startApprenticeship
+     * @param  Date|null  $startApprenticeship
      */
     public function setStartApprenticeship(?Date $startApprenticeship): void
     {
         $this->startApprenticeship = $startApprenticeship;
     }
-
+    
     /**
      * @return Date|null
      */
-    public function getEndApprenticeship(): ?Date
+    public function getEndApprenticeship(): ?DateTime
     {
         return $this->endApprenticeship;
     }
-
+    
     /**
-     * @param Date|null $endApprenticeship
+     * @param  Date|null  $endApprenticeship
      */
     public function setEndApprenticeship(?Date $endApprenticeship): void
     {
         $this->endApprenticeship = $endApprenticeship;
     }
+    
+    public function getAzubiId(): ?int
+    {
+        return $this->azubiId;
+    }
+    
+    public function setAzubiId(?int $azubiId): self
+    {
+        $this->azubiId = $azubiId;
+        
+        return $this;
+    }
+    
+    public function getAusbilderId(): ?int
+    {
+        return $this->ausbilderId;
+    }
+    
+    public function setAusbilderId(?int $ausbilderId): self
+    {
+        $this->ausbilderId = $ausbilderId;
+        
+        return $this;
+    }
+    
 }

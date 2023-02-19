@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -33,6 +35,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     
     #[ORM\Column(length: 255)]
     private ?string $lastname  = null;
+
+    #[ORM\OneToMany(mappedBy: 'azubiId', targetEntity: Apprenticeship::class)]
+    private Collection $apprenticeships;
+
+    #[ORM\OneToMany(mappedBy: 'ausbilderId', targetEntity: Apprenticeship::class)]
+    private Collection $courses;
+
+    public function __construct()
+    {
+        $this->apprenticeships = new ArrayCollection();
+        $this->courses = new ArrayCollection();
+    }
     
     public function getId(): ?int
     {
@@ -126,6 +140,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->lastname = $lastname;
         
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Apprenticeship>
+     */
+    public function getApprenticeships(): Collection
+    {
+        return $this->apprenticeships;
+    }
+
+    public function addApprenticeship(Apprenticeship $apprenticeship): self
+    {
+        if (!$this->apprenticeships->contains($apprenticeship)) {
+            $this->apprenticeships->add($apprenticeship);
+            $apprenticeship->setAzubiId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeApprenticeship(Apprenticeship $apprenticeship): self
+    {
+        if ($this->apprenticeships->removeElement($apprenticeship)) {
+            // set the owning side to null (unless already changed)
+            if ($apprenticeship->getAzubiId() === $this) {
+                $apprenticeship->setAzubiId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Apprenticeship>
+     */
+    public function getCourses(): Collection
+    {
+        return $this->courses;
+    }
+
+    public function addCourse(Apprenticeship $course): self
+    {
+        if (!$this->courses->contains($course)) {
+            $this->courses->add($course);
+            $course->setAusbilderId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCourse(Apprenticeship $course): self
+    {
+        if ($this->courses->removeElement($course)) {
+            // set the owning side to null (unless already changed)
+            if ($course->getAusbilderId() === $this) {
+                $course->setAusbilderId(null);
+            }
+        }
+
         return $this;
     }
     
