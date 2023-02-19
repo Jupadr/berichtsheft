@@ -123,7 +123,7 @@ class RegistrationController extends AbstractController
             $em->persist($apprenticeship);
             $em->flush();
             
-            $this->addFlash('success', 'Erfolgreich registriert! Sie können sich nun anmelden. : ' . $user->getId());
+            $this->addFlash('success', 'Erfolgreich registriert! Sie können sich nun anmelden.');
             return $this->redirectToRoute('app_login');
         }
         
