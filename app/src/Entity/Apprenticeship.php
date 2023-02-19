@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\ApprenticeshipRepository;
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ApprenticeshipRepository::class)]
@@ -38,6 +40,14 @@ class Apprenticeship
     
     #[ORM\Column(name: 'company_name', length: 512)]
     private ?string   $companyName = null;
+
+    #[ORM\OneToMany(mappedBy: 'apprenticeshipId', targetEntity: Entry::class)]
+    private Collection $entries;
+
+    public function __construct()
+    {
+        $this->entries = new ArrayCollection();
+    }
     
     /**
      * @return int|null
@@ -148,6 +158,36 @@ class Apprenticeship
     {
         $this->companyName = $companyName;
         
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Entry>
+     */
+    public function getEntries(): Collection
+    {
+        return $this->entries;
+    }
+
+    public function addEntry(Entry $entry): self
+    {
+        if (!$this->entries->contains($entry)) {
+            $this->entries->add($entry);
+            $entry->setApprenticeshipId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEntry(Entry $entry): self
+    {
+        if ($this->entries->removeElement($entry)) {
+            // set the owning side to null (unless already changed)
+            if ($entry->getApprenticeshipId() === $this) {
+                $entry->setApprenticeshipId(null);
+            }
+        }
+
         return $this;
     }
     
