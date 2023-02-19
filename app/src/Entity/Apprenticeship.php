@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ApprenticeshipRepository;
-use Cassandra\Date;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -17,7 +16,7 @@ class Apprenticeship
     private ?int      $id;
     
     #[ORM\Column(name: 'invite_token', length: 255, unique: true)]
-    private string    $inviteToken;
+    private ?string   $inviteToken;
     
     #[ORM\Column(type: 'date')]
     private ?DateTime $startApprenticeship;
@@ -33,6 +32,12 @@ class Apprenticeship
     #[ORM\ManyToOne(inversedBy: 'courses')]
     #[ORM\JoinColumn(nullable: false)]
     private ?int      $ausbilderId = null;
+    
+    #[ORM\Column(length: 512)]
+    private ?string   $title       = null;
+    
+    #[ORM\Column(name: 'company_name', length: 512)]
+    private ?string   $companyName = null;
     
     /**
      * @return int|null
@@ -67,7 +72,7 @@ class Apprenticeship
     }
     
     /**
-     * @return Date|null
+     * @return DateTime|null
      */
     public function getStartApprenticeship(): ?DateTime
     {
@@ -75,15 +80,15 @@ class Apprenticeship
     }
     
     /**
-     * @param  Date|null  $startApprenticeship
+     * @param  DateTime|null  $startApprenticeship
      */
-    public function setStartApprenticeship(?Date $startApprenticeship): void
+    public function setStartApprenticeship(?DateTime $startApprenticeship): void
     {
         $this->startApprenticeship = $startApprenticeship;
     }
     
     /**
-     * @return Date|null
+     * @return DateTime|null
      */
     public function getEndApprenticeship(): ?DateTime
     {
@@ -91,9 +96,9 @@ class Apprenticeship
     }
     
     /**
-     * @param  Date|null  $endApprenticeship
+     * @param  DateTime|null  $endApprenticeship
      */
-    public function setEndApprenticeship(?Date $endApprenticeship): void
+    public function setEndApprenticeship(?DateTime $endApprenticeship): void
     {
         $this->endApprenticeship = $endApprenticeship;
     }
@@ -118,6 +123,30 @@ class Apprenticeship
     public function setAusbilderId(?int $ausbilderId): self
     {
         $this->ausbilderId = $ausbilderId;
+        
+        return $this;
+    }
+    
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+    
+    public function setTitle(string $title): self
+    {
+        $this->title = $title;
+        
+        return $this;
+    }
+    
+    public function getCompanyName(): ?string
+    {
+        return $this->companyName;
+    }
+    
+    public function setCompanyName(string $companyName): self
+    {
+        $this->companyName = $companyName;
         
         return $this;
     }

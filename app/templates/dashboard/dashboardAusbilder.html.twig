@@ -5,8 +5,48 @@
 {% block body %}
     <div class="example-wrapper">
         <h1>Ausbilder-Dashboard</h1>
-        <ul>
-            <li class="list-group-item"><a href="{{ path('create_apprenticeship')}}">Einladungs Link</a></li>
-        </ul>
+        <hr/>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a class="btn btn-primary" href="{{ path('app_dashboard_add') }}">+ Neue Ausbildung</a>
+        </div>
+
+        {% for entry in apprenticeships %}
+            <div class="card mt-3">
+                {% if entry.unread > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ entry.unread }}
+                        <span class="visually-hidden">unbearbeitete Tage</span>
+                    </span>
+                {% endif %}
+                <div class="card-header">
+                    <ul class="nav nav-pills card-header-pills">
+                        <li class="nav-item">
+                            {% if entry.azubiId != null %}
+                                <span class="nav-link text-black">{{ entry.firstname }} {{ entry.lastname }}</span>
+                            {% endif %}
+                        </li>
+                        <li class="nav-item">
+                            {% if entry.azubiId != null %}
+                                <a class="nav-link" href="{{ path('app_dashboard') }}/{{ entry.id }}">Öffnen</a>
+                            {% else %}
+                                <span class="nav-link text-black">Ausbildungstoken noch nicht eingelöst</span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    {% if entry.azubiId != null %}
+                        This is some text within a card body.
+                    {% else %}
+                        Token: <code>{{ entry.token }}</code>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        {% if apprenticeships|length == 0 %}
+            <div class="text-center text-secondary">
+                <span>Keine Ausbildungen vorhanden</span>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}

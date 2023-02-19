@@ -5,5 +5,41 @@
 {% block body %}
     <div class="example-wrapper">
         <h1>Azubi-Dashboard</h1>
+        <hr/>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a class="btn btn-primary" href="{{ path('app_dashboard_add') }}">+ Neue Ausbildung</a>
+        </div>
+
+        {% for entry in apprenticeships %}
+            <div class="card mt-3">
+                {% if entry.unread > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ entry.unread }}
+                        <span class="visually-hidden">unbearbeitete Tage</span>
+                    </span>
+                {% endif %}
+                <div class="card-header">
+                    <ul class="nav nav-pills card-header-pills">
+                        <li class="nav-item">
+                            <span class="nav-link text-black">{{ entry.title }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <span class="nav-link text-secondary">{{ entry.firstname }} {{ entry.lastname }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_dashboard') }}/{{ entry.id }}">Öffnen</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    This is some text within a card body.
+                </div>
+            </div>
+        {% endfor %}
+        {% if apprenticeships|length == 0 %}
+            <div class="text-center text-secondary">
+                <span>Keine Ausbildungen vorhanden</span>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
