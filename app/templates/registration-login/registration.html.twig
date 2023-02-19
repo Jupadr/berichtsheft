@@ -4,39 +4,15 @@
 
 {% block stylesheets %}
     {{ encore_entry_link_tags('bootstrap') }}
-    {{ encore_entry_link_tags('registration') }}
 {% endblock %}
 
 {% block body %}
-
     <div class="registration">
-        <form action="/createUser" method="post" class="register-from">
-            <div class="col-4 row g-3 form-fields">
-                <div class="col-12">
-                    <label for="lastName" class="name form-label">Nachname: </label>
-                    <input type="text" name="lastName" id="lastName" class="form-control"/>
-                </div>
-                <div class="col-12">
-                    <label for="firstName" class="name form-label">Vorname: </label>
-                    <input type="text" name="firstName" id="firstName" class="form-control"/>
-                </div>
-                <div class="col-12">
-                    <label for="e-mailadress" class="label e-mail form-label">E-mail Adresse: </label>
-                    <input type="email" name="e-mail" id="e-mailadress" class="form-control"/>
-                </div>
-                <div class="col-12">
-                    <label for="birth-date" class="labels form-label">Alter: </label>
-                    <input type="date" name="birth-date" id="birth-date" class="form-control"/>
-                </div>
-                <div class="col-12">
-                    <label for="password" class="label password form-label">Passwort: </label>
-                    <input type="password" name="password" id="password" class="form-control"/>
-                </div>
-                <div class="col-12">
-                    <input type="submit" name="submit" id="send" class="form-control"/>
-                </div>
-            </div>
-        </form>
+        <div>
+            <a href="{{ path('app_registration_ausbilder') }}">Registration Ausbilder</a>
+        </div>
+        <div>
+            <a href="{{ path('app_registration_azubi') }}">Registration Azubi</a>
+        </div>
     </div>
-
 {% endblock %}

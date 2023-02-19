@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('bootstrap') }}
+{% endblock %}
+
+{% block body %}
+    <div class="example-wrapper">
+        <h1>Benutzerliste</h1>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Aktionen</th>
+                <th>ID</th>
+                <th>Invite-Token</th>
+                <th>Start</th>
+                <th>Ende</th>
+                <th>Ausbilder</th>
+                <th>Azubi</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for apprenticeship in apprenticeships %}
+                <tr>
+                    <td>
+                    </td>
+                    <td>{{ apprenticeship.apprenticeship.id }}</td>
+                    <td>{{ apprenticeship.apprenticeship.inviteToken }}</td>
+                    <td>{{ apprenticeship.apprenticeship.startApprenticeship|date }}</td>
+                    <td>{{ apprenticeship.apprenticeship.endApprenticeship|date }}</td>
+                    <td>{{ apprenticeship.ausbilder }} ({{ apprenticeship.apprenticeship.ausbilderId }})</td>
+                    <td>{{ apprenticeship.azubi }} ({{ apprenticeship.apprenticeship.azubiId }})</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

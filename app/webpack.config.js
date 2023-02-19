@@ -25,7 +25,6 @@ Encore
   .addEntry('heatmap-js', './assets/cal-heatmap.min.js')
   .addEntry('popper', './assets/popper.min.js')
   .addEntry('d3', './assets/d3.v7.min.js')
-  .addEntry('registration', './assets/styles/registration-style.css')
   .addEntry('bootstrap', './assets/styles/bootstrap.css')
   .addEntry('heatmap-css', './assets/cal-heatmap.css')
   

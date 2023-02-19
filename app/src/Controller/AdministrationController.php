@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Apprenticeship;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -26,6 +27,28 @@ class AdministrationController extends AbstractController
     {
         return $this->render('administration/index.html.twig', [
             'controller_name' => 'AdministrationController',
+        ]);
+    }
+    
+    #[Route('/administration/apprenticeships', name: 'administration_apprenticeships')]
+    public function listApprenticeships(ManagerRegistry $doctrine): Response
+    {
+        $apprenticeships = $doctrine->getRepository(Apprenticeship::class)->findAll();
+        
+        $list = [];
+        
+        foreach ($apprenticeships as $apprenticeship) {
+            $list[] = (object)[
+                'apprenticeship' => $apprenticeship,
+                'azubi'          => $doctrine->getRepository(User::class)->find($apprenticeship->getAzubiId())
+                        ?->getUsername() ?? '--',
+                'ausbilder'      => $doctrine->getRepository(User::class)->find($apprenticeship->getAusbilderId())
+                        ?->getUsername() ?? '--',
+            ];
+        }
+        
+        return $this->render('administration/apprenticeships.html.twig', [
+            'apprenticeships' => $list,
         ]);
     }
     
