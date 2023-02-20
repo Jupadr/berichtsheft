@@ -24,34 +24,6 @@ use Symfony\Component\Uid\UuidV4;
 class DashboardController extends AbstractController
 {
     
-    //    #[Route('dashboard/createApprenticeship', name: 'create_apprenticeship')]
-    //    public function saveApprenticeship(
-    //        Request $request,
-    //        ManagerRegistry $doctrine,
-    //        EntityManagerInterface $em,
-    //        UserInterface $user,
-    //    ): Response {
-    //        $uuid           = Uuid::v4();
-    //        $apprenticeship = new Apprenticeship();
-    //        $apprenticeship->setInviteToken($uuid->toRfc4122());
-    //        if (in_array('ROLE_AUSBILDER', $user->getRoles(), true)) {
-    //            $apprenticeship->setInstructorId($user);
-    //        }
-    //        $form = $this->addAzubi($apprenticeship);
-    //        $form->handleRequest($request);
-    //        if ($form->isSubmitted() && $form->isValid()) {
-    //            var_dump($form->getData());
-    //            $apprenticeship = $form->getData();
-    //            $em->persist($apprenticeship);
-    //            $em->flush();
-    //            $this->addFlash('success', 'Ausbildung angelegt');
-    //        }
-    //        $formView = $form->createView();
-    //        return $this->render('dashboard/dashboardAddAzubi.html.twig', [
-    //            'form' => $formView,
-    //        ]);
-    //    }
-    
     #[Route('/dashboard/add', name: 'app_dashboard_add')]
     public function dashboardAdd(
         Request $request,

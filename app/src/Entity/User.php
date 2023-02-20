@@ -28,24 +28,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var ?string The hashed password
      */
     #[ORM\Column]
-    private ?string $password  = null;
+    private ?string    $password  = null;
     
     #[ORM\Column(length: 255)]
-    private ?string $firstname = null;
+    private ?string    $firstname = null;
     
     #[ORM\Column(length: 255)]
-    private ?string $lastname  = null;
-
+    private ?string    $lastname  = null;
+    
     #[ORM\OneToMany(mappedBy: 'azubiId', targetEntity: Apprenticeship::class)]
     private Collection $apprenticeships;
-
+    
     #[ORM\OneToMany(mappedBy: 'ausbilderId', targetEntity: Apprenticeship::class)]
     private Collection $courses;
-
+    
     public function __construct()
     {
         $this->apprenticeships = new ArrayCollection();
-        $this->courses = new ArrayCollection();
+        $this->courses         = new ArrayCollection();
     }
     
     public function getId(): ?int
@@ -97,12 +97,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see PasswordAuthenticatedUserInterface
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
     
-    public function setPassword(string $password): self
+    public function setPassword(?string $password): self
     {
         $this->password = $password;
         
@@ -142,7 +142,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         
         return $this;
     }
-
+    
     /**
      * @return Collection<int, Apprenticeship>
      */
@@ -150,17 +150,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->apprenticeships;
     }
-
+    
     public function addApprenticeship(Apprenticeship $apprenticeship): self
     {
         if (!$this->apprenticeships->contains($apprenticeship)) {
             $this->apprenticeships->add($apprenticeship);
             $apprenticeship->setAzubiId($this);
         }
-
+        
         return $this;
     }
-
+    
     public function removeApprenticeship(Apprenticeship $apprenticeship): self
     {
         if ($this->apprenticeships->removeElement($apprenticeship)) {
@@ -169,10 +169,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $apprenticeship->setAzubiId(null);
             }
         }
-
+        
         return $this;
     }
-
+    
     /**
      * @return Collection<int, Apprenticeship>
      */
@@ -180,17 +180,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->courses;
     }
-
+    
     public function addCourse(Apprenticeship $course): self
     {
         if (!$this->courses->contains($course)) {
             $this->courses->add($course);
             $course->setAusbilderId($this);
         }
-
+        
         return $this;
     }
-
+    
     public function removeCourse(Apprenticeship $course): self
     {
         if ($this->courses->removeElement($course)) {
@@ -199,7 +199,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $course->setAusbilderId(null);
             }
         }
-
+        
         return $this;
     }
     
