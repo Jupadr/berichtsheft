@@ -4,13 +4,17 @@ namespace App\Controller;
 
 use App\Entity\Apprenticeship;
 use App\Entity\User;
+use App\Entity\Entry;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use http\Exception\RuntimeException;
+use PHPUnit\Util\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -191,6 +195,58 @@ class DashboardController extends AbstractController
         
         $formView = $form->createView();
         return $this->render('dashboard/dashboardAddAzubi.html.twig', [
+            'form' => $formView,
+        ]);
+    }
+
+    #[Route('/dashboard/{entry.id}', name: 'app_dashboard')]
+    public function azubiDashboard(
+        ManagerRegistry $doctrine,
+        EntityManagerInterface $em,
+        Apprenticeship $apprenticeship,
+        Entry $entry,
+        Request $request,
+    ): Response {
+        $form = $this->createFormBuilder()
+            ->add('Text', TextareaType::class, [
+                'label'    => 'Gesamt Themem Dieses Monats:',
+                'required' => true,
+            ])
+            ->add('reportDate', DateType::class, [
+                'label'    => 'erstelldatum',
+                'widget'   => 'single_text',
+                'required' => true,
+            ])
+            ->add('reportTime', NumberType::class, [
+                'label'    => 'Vorgangsdauer',
+                'widget'   => 'single_text',
+                'required' => true,
+            ])
+            ->add('save', SubmitType::class, [
+                'label' => 'Ausbildung erstellen',
+            ])
+            ->getForm();
+        $form->handleRequest($request);
+        if ($form->isSubmitted()) {
+            $report = $em->getRepository(Apprenticeship::class)->findOneBy([
+                'id' => $apprenticeship->getId(),
+            ]);
+            if($report !== $entry->getApprenticeshipId()) {
+                Throw new RuntimeException();
+            }
+
+            $entry = new Entry();
+            $entry->setApprenticeshipId($report);
+            $entry->setText($request->get('form')['Text']);
+            $entry->setDate($request->get('form')['reportDate']);
+            $entry->setTime($request->get('form')['reportTime']);
+
+            $em->persist($entry);
+            $em->flush();
+        }
+
+        $formView = $form->createView();
+        $this->render('dashboard/dashboardWeeklyReport.html.twig', [
             'form' => $formView,
         ]);
     }
