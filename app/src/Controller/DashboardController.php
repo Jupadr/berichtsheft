@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Berichtsheft\Heatmap;
 use App\Entity\Apprenticeship;
 use App\Entity\User;
 use DateTime;
@@ -219,6 +220,14 @@ class DashboardController extends AbstractController
                     $azubi = $em->getRepository(User::class)->find($apprenticeship->getAzubiId());
                 }
                 
+                //                var_dump($apprenticeship->getEntries()->toArray());
+                
+                $entries = Heatmap::handleAzubi(
+                    $apprenticeship->getStartApprenticeship(),
+                    $apprenticeship->getEndApprenticeship(),
+                    $apprenticeship->getEntries()->toArray(),
+                );
+                
                 $targetArray[] = (object)[
                     'id'        => $apprenticeship->getId(),
                     'azubiId'   => $azubi?->getId(),
@@ -226,6 +235,7 @@ class DashboardController extends AbstractController
                     'lastname'  => $azubi?->getLastname(),
                     'unread'    => '99+',
                     'token'     => $apprenticeship->getInviteToken(),
+                    'entries'   => $entries,
                 ];
             }
             
