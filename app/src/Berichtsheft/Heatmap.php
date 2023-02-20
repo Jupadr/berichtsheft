@@ -23,12 +23,11 @@ class Heatmap
         
         $resultArray = [];
         while ($pointerDay->getTimestamp() < $targetTimestamp) {
-            //            var_dump($pointerDay->format("Y-m-d"));
-            $currentEntries = array_filter($entries, static function ($entry) use (&$currentDate) {
-                return $entry->getDate()?->format('Y-m-d') === $currentDate->format('Y-m-d');
+            $currentEntries = array_filter($entries, static function ($entry) use (&$pointerDay) {
+                return $entry->getDate()?->format('Y-m-d') === $pointerDay->format('Y-m-d');
             });
             
-            if (empty($currentEntries)) {
+            if (count($currentEntries) === 0) {
                 $resultArray[] = (object)[
                     'date'  => $pointerDay->format('Y-m-d'),
                     'value' => HeatmapColor::FEHLEND->value,

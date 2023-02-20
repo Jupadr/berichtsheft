@@ -220,8 +220,6 @@ class DashboardController extends AbstractController
                     $azubi = $em->getRepository(User::class)->find($apprenticeship->getAzubiId());
                 }
                 
-                //                var_dump($apprenticeship->getEntries()->toArray());
-                
                 $entries = Heatmap::handleAzubi(
                     $apprenticeship->getStartApprenticeship(),
                     $apprenticeship->getEndApprenticeship(),
@@ -235,6 +233,8 @@ class DashboardController extends AbstractController
                     'lastname'  => $azubi?->getLastname(),
                     'unread'    => '99+',
                     'token'     => $apprenticeship->getInviteToken(),
+                    'start'     => $apprenticeship->getStartApprenticeship()?->format('Y-m-d'),
+                    'end'       => $apprenticeship->getEndApprenticeship()?->format('Y-m-d'),
                     'entries'   => $entries,
                 ];
             }

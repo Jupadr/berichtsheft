@@ -1,5 +1,16 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+    {{ encore_entry_link_tags('heatmap-css') }}
+    {{ encore_entry_link_tags('bootstrap') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('popper') }}
+    {{ encore_entry_script_tags('d3') }}
+    {{ encore_entry_script_tags('calHeatmap') }}
+{% endblock %}
+
 {% block title %}Hello DashboardController!{% endblock %}
 
 {% block body %}
@@ -36,9 +47,7 @@
                 </div>
                 <div class="card-body">
                     {% if apprenticeship.azubiId != null %}
-                        {% for entry in apprenticeship.entries %}
-                            <div>{{ entry.date }} - {{ entry.value }}</div>
-                        {% endfor %}
+                        <div class="heatmap overflow-hidden" class="hidden" data-start="{{ apprenticeship.start }}" data-end="{{ apprenticeship.end }}" data-entries="{{ apprenticeship.entries|json_encode }}"></div>
                     {% else %}
                         Token: <code>{{ apprenticeship.token }}</code>
                     {% endif %}
@@ -51,4 +60,9 @@
             </div>
         {% endif %}
     </div>
+    <script>
+      window.onload = () => {
+        window.genCalHeatmap2()
+      }
+    </script>
 {% endblock %}
