@@ -8,8 +8,34 @@
     </div>
 
     <div class="example-wrapper">
-        {{ form_start(form) }}
-        {{ form_widget(form) }}
-        {{ form_end(form) }}
+        {% for entry in entries %}
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Aktionen</th>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>text</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="#">Eintrag Bearbeiten</a>
+                            <a href="{{ path('add_entry', {id: entry.id, date: entry.date}) }}">Neuer Eintrag anlegen</a>
+                        </td>
+                        <td>
+                            <span>{{ entry.id }}</span>
+                        </td>
+                        <td>
+                            <span>{{ entry.date }}</span>
+                        </td>
+                        <td>
+                            <span>{{ entry.text }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endfor %}
     </div>
 {% endblock %}
