@@ -11,12 +11,14 @@ use Doctrine\Persistence\ManagerRegistry;
 use http\Exception\RuntimeException;
 use PHPUnit\Util\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -228,7 +230,74 @@ class DashboardController extends AbstractController
         }, $entries);
         return $this->render('dashboard/dashboardWeeklyReport.html.twig', [
             'entries' => $entries,
+            'apprenticeshipId' => $id,
+            'date' => $date->format('Y-m-d'),
         ]);
+    }
+    #[Route('/dashboard/{id}/{date}/deleteEntry/{entryId}', name:'delete_entry')]
+    public function deleteEntry(
+        Request $request,
+        ManagerRegistry $doctrine,
+        EntityManagerInterface $em,
+        int $id,
+        DateTime $date,
+        int $entryId,
+    )
+    {
+        $entry = $doctrine->getRepository(Entry::class)->findOneBy(
+            ['id' => $entryId]
+        );
+
+        $form = $this->createFormBuilder()
+            ->add('delete', CheckboxType::class, [
+                'label'    => 'Ja',
+                'required' => true,
+            ])
+            ->add('submit', SubmitType::class, ['label' => 'Eintrag löschen',])
+            ->getForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($request->get('form')['delete']) {
+                $em->remove($entry);
+                $em->flush();
+                $this->addFlash(
+                    'success',
+                    'Eintrag wurde erfolgreich gelöscht'
+                );
+            } else {
+                $this->addFlash('info', 'Eintrag wurde nicht gelöscht');
+            }
+            return $this->redirectToRoute('report_dashboard', array(
+                'id' => $id,
+                'date' => $date->format('Y-m-d')
+            ));
+        }
+
+        $formView = $form->createView();
+        return $this->render('dashboard/dashboardDeleteEntry.html.twig', [
+            'form' => $formView,
+        ]);
+    }
+
+    public function entryForm(Entry $entry, DashboardEntrySubmitType $type): FormInterface
+    {
+        return $this->createFormBuilder($entry)
+            ->add('text', TextType::class, [
+                'label' => 'text',
+                'required' => true,
+            ])
+            ->add('time', NumberType::class, [
+                'label'    => 'Vorgangsdauer',
+                'required' => true
+            ])
+            ->add('save', SubmitType::class, [
+                'label' => match ($type) {
+                    DashboardEntrySubmitType::CREATE => 'Eintrag erstellten',
+                    DashboardEntrySubmitType::EDIT => 'Eintrag bearbeiten',
+                },
+            ])
+            ->getForm();
     }
     #[Route('/dashboard/{id}/{date}/add', name:'add_entry')]
     public function addEntry
@@ -239,20 +308,10 @@ class DashboardController extends AbstractController
         DateTime $date,
         Request $request,
     ): Response {
-        $form = $this->createFormBuilder()
-            ->add('text', TextType::class, [
-                'label' => 'text',
-                'required' => true,
-            ])
-            ->add('reportTime', NumberType::class, [
-                'label'    => 'Vorgangsdauer',
-                'required' => true
-            ])
-            ->add('save', SubmitType::class, [
-                'label' => 'Bericht Speichern',
-            ])
-            ->getForm();
+        $entry = new Entry();
+        $form = $this->entryForm($entry, DashboardEntrySubmitType::CREATE);
         $form->handleRequest($request);
+
 
         $apprenticeship = $em->getRepository(Apprenticeship::class)->findOneBy([
            'id' => $id,
@@ -262,11 +321,48 @@ class DashboardController extends AbstractController
             $entry = new Entry();
             $entry->setApprenticeshipId($apprenticeship);
             $entry->setText($request->get('form')['text']);
-            $entry->setTime($request->get('form')['reportTime']);
+            $entry->setTime($request->get('form')['time']);
             $entry->setDate($date);
 
             $em->persist($entry);
             $em->flush();
+            return $this->redirectToRoute('report_dashboard', array(
+                'id' => $id,
+                'date' => $date->format('Y-m-d')
+            ));
+        }
+        $formView = $form->createView();
+        return $this->render('dashboard/dashboardCreateNewReport.html.twig', [
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/dashboard/{id}/{date}/edit/{entryid}', name:'edit_entry')]
+    public function editEntry
+    (
+        ManagerRegistry $doctrine,
+        EntityManagerInterface $em,
+        int $id,
+        int $entryid,
+        DateTime $date,
+        Request $request,
+    ): Response {
+        $entry = $doctrine->getRepository(Entry::class)->findOneBy(
+            ['id' => $entryid]
+        );
+
+        $form = $this->entryForm($entry, DashboardEntrySubmitType::EDIT);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entry = $form->getData();
+
+            $em->persist($entry);
+            $em->flush();
+            return $this->redirectToRoute('report_dashboard', array(
+                'id' => $id,
+                'date' => $date->format('Y-m-d')
+            ));
         }
         $formView = $form->createView();
         return $this->render('dashboard/dashboardCreateNewReport.html.twig', [
@@ -379,5 +475,13 @@ class DashboardController extends AbstractController
     ): Response {
         return new Response('Work in progress');
     }
+
     
+}
+enum DashboardEntrySubmitType
+{
+
+    case CREATE;
+    case EDIT;
+
 }

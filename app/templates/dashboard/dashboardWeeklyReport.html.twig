@@ -8,6 +8,8 @@
     </div>
 
     <div class="example-wrapper">
+        <a href="{{ path('add_entry', {id: apprenticeshipId, date: date}) }}" class="btn btn-primary">Neuer Eintrag anlegen</a>
+
         {% for entry in entries %}
             <table class="table">
                 <thead>
@@ -16,13 +18,14 @@
                     <th>ID</th>
                     <th>Date</th>
                     <th>text</th>
+                    <th>time</th>
                 </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>
-                            <a href="#">Eintrag Bearbeiten</a>
-                            <a href="{{ path('add_entry', {id: entry.id, date: entry.date}) }}">Neuer Eintrag anlegen</a>
+                            <a href="{{ path('edit_entry', {id: entry.apprenticeshipId.id, date: entry.date, entryid: entry.id }) }}" class="btn btn-primary">Eintrag Bearbeiten</a>
+                            <a href="{{ path('delete_entry', {id: entry.apprenticeshipId.id, date: entry.date, entryId: entry.id}) }}" class="btn btn-primary">Löschen</a>
                         </td>
                         <td>
                             <span>{{ entry.id }}</span>
@@ -32,6 +35,9 @@
                         </td>
                         <td>
                             <span>{{ entry.text }}</span>
+                        </td>
+                        <td>
+                            <span>{{ entry.time }}</span>
                         </td>
                     </tr>
                 </tbody>
