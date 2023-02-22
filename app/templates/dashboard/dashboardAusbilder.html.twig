@@ -38,7 +38,7 @@
                         </li>
                         <li class="nav-item">
                             {% if apprenticeship.azubiId != null %}
-                                <a class="nav-link" href="{{ path('app_dashboard') }}/{{ apprenticeship.id }}">Öffnen</a>
+                                {#                                <a class="nav-link" href="{{ path('app_dashboard') }}/{{ apprenticeship.id }}">Öffnen</a> #}
                             {% else %}
                                 <span class="nav-link text-black">Ausbildungstoken noch nicht eingelöst</span>
                             {% endif %}
@@ -47,7 +47,7 @@
                 </div>
                 <div class="card-body">
                     {% if apprenticeship.azubiId != null %}
-                        <div class="heatmap overflow-hidden" class="hidden" data-start="{{ apprenticeship.start }}" data-end="{{ apprenticeship.end }}" data-entries="{{ apprenticeship.entries|json_encode }}"></div>
+                        <div class="heatmap overflow-hidden" class="hidden" data-apprenticeship="{{ apprenticeship.id }}" data-start="{{ apprenticeship.start }}" data-end="{{ apprenticeship.end }}" data-entries="{{ apprenticeship.entries|json_encode }}"></div>
                     {% else %}
                         Token: <code>{{ apprenticeship.token }}</code>
                     {% endif %}

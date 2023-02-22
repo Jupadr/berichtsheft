@@ -4,6 +4,7 @@ import Tooltip from '../Tooltip.min'
 window.genCalHeatmap2 = function () {
   let elements = document.getElementsByClassName('heatmap')
   for (let element of elements) {
+    let apprenticeshipId = element.dataset.apprenticeship
     let start = element.dataset.start
     let end = element.dataset.end
     let entries = JSON.parse(element.dataset.entries)
@@ -11,7 +12,9 @@ window.genCalHeatmap2 = function () {
     let cal = new CalHeatmap()
     
     cal.on('click', (event, timestamp, value) => {
-    
+      let date = new Date(timestamp + 36000)
+      let isoDate = date.toISOString().slice(0, 10)
+      window.location.assign(`/dashboard/${apprenticeshipId}/${isoDate}`)
     })
     
     cal.paint({
@@ -34,7 +37,13 @@ window.genCalHeatmap2 = function () {
         },
         subLabel: {
           text: () => {
-            return dayjs.weekdays().map(d => d[0].toUpperCase())
+            return dayjs.weekdays().map((d, index) => {
+              if (index % 2 === 1) {
+                return d[0].toUpperCase()
+              } else {
+                return ''
+              }
+            })
           }
         }
       },
@@ -59,7 +68,7 @@ window.genCalHeatmap2 = function () {
         Tooltip,
         {
           enabled: true,
-          text: (timestamp, value, dayjsDate) => `${dayjsDate.format('DD.MM.YYYY')}`,
+          text: (timestamp, value, dayjsDate) => `${dayjsDate.add(2, 'hours').format('dddd | DD.MM.YYYY')}, ${getStatus(value)}`,
           placement: 'right',
           modifiers: [
             {
@@ -72,6 +81,19 @@ window.genCalHeatmap2 = function () {
         }
       ]
     ])
+  }
+}
+
+function getStatus(value) {
+  switch (value) {
+    case 5:
+      return 'Abgearbeitet'
+    case 25:
+      return 'Abgelehnt'
+    case 14:
+      return 'Abgesegnet'
+    default:
+      return 'Kein Eintrag' // Also for value == 22
   }
 }
 

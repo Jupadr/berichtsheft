@@ -3,6 +3,7 @@
 namespace App\Berichtsheft;
 
 use DateTime;
+use DateTimeZone;
 use stdClass;
 
 class Heatmap
@@ -27,8 +28,9 @@ class Heatmap
                 return $entry->getDate()?->format('Y-m-d') === $pointerDay->format('Y-m-d');
             });
             
-            if (count($currentEntries) === 0) {
+            if (count($currentEntries) === 0 && (int)$pointerDay->format('w') > 1) {
                 $resultArray[] = (object)[
+                    $pointerDay->setTimezone(new DateTimeZone('Europe/London')),
                     'date'  => $pointerDay->format('Y-m-d'),
                     'value' => HeatmapColor::FEHLEND->value,
                 ];
@@ -36,23 +38,29 @@ class Heatmap
                 continue;
             }
             
+            if (count($currentEntries) === 0) {
+                $pointerDay->modify('+1 day');
+                continue;
+            }
+            
             $color         = HeatmapColor::FEHLEND;
             $uniqueEntries = array_unique(
                 array_map(static function ($entry) {
-                    return match ($entry->getStatus()) {
+                    $ret = match ($entry->getStatus()) {
                         0 => HeatmapColor::ABGEARBEITET,
                         1 => HeatmapColor::ABGESEGNET,
                         2 => HeatmapColor::ABGELEHNT,
                         default => HeatmapColor::FEHLEND,
                     };
-                }, $entries)
+                    return $ret->value;
+                }, $currentEntries)
             );
             
-            if (in_array(HeatmapColor::ABGELEHNT, $uniqueEntries, true)) {
+            if (in_array(HeatmapColor::ABGELEHNT->value, $uniqueEntries, true)) {
                 $color = HeatmapColor::ABGELEHNT->value;
-            } elseif (in_array(HeatmapColor::ABGEARBEITET, $uniqueEntries, true)) {
+            } elseif (in_array(HeatmapColor::ABGEARBEITET->value, $uniqueEntries, true)) {
                 $color = HeatmapColor::ABGEARBEITET->value;
-            } elseif (in_array(HeatmapColor::ABGESEGNET, $uniqueEntries, true)) {
+            } elseif (in_array(HeatmapColor::ABGESEGNET->value, $uniqueEntries, true)) {
                 $color = HeatmapColor::ABGESEGNET->value;
             }
             

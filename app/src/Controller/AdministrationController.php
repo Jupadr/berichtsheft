@@ -32,19 +32,21 @@ class AdministrationController extends AbstractController
     }
     
     #[Route('/administration/apprenticeships', name: 'administration_apprenticeships')]
-    public function listApprenticeships(ManagerRegistry $doctrine): Response
+    public function listApprenticeships(EntityManagerInterface $em): Response
     {
-        $apprenticeships = $doctrine->getRepository(Apprenticeship::class)->findAll();
+        $apprenticeships = $em->getRepository(Apprenticeship::class)->findAll();
         
         $list = [];
         
         foreach ($apprenticeships as $apprenticeship) {
             $list[] = (object)[
                 'apprenticeship' => $apprenticeship,
-                'azubi'          => $doctrine->getRepository(User::class)->find($apprenticeship->getAzubiId())
-                        ?->getUsername() ?? '--',
-                'ausbilder'      => $doctrine->getRepository(User::class)->find($apprenticeship->getAusbilderId())
-                        ?->getUsername() ?? '--',
+                'azubi'          => $apprenticeship->getAzubiId() !== null ? $em->getRepository(User::class)->find(
+                    $apprenticeship->getAzubiId()
+                )
+                    ?->getUsername() : null,
+                'ausbilder'      => $em->getRepository(User::class)->find($apprenticeship->getAusbilderId())
+                    ?->getUsername(),
             ];
         }
         
