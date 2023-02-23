@@ -32,9 +32,11 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid col-4">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('app_administration') }}">Administration</a>
-                </li>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_administration') }}">Administration</a>
+                    </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ path('app_dashboard') }}">Dashboard</a>
                 </li>

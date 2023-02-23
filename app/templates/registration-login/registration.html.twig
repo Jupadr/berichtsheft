@@ -7,12 +7,13 @@
 {% endblock %}
 
 {% block body %}
-    <div class="registration">
-        <div>
-            <a href="{{ path('app_registration_ausbilder') }}">Registration Ausbilder</a>
+    <div class="example-wrapper">
+        <div class="container">
+            <h3>Als was möchten Sie sich registrieren?</h3>
         </div>
-        <div>
-            <a href="{{ path('app_registration_azubi') }}">Registration Azubi</a>
+        <div class="container mb-3">
+            <a class="btn btn-outline-primary" href="{{ path('app_registration_ausbilder') }}">Registration Ausbilder</a>
+            <a class="btn btn-outline-primary" href="{{ path('app_registration_azubi') }}">Registration Azubi</a>
         </div>
     </div>
 {% endblock %}

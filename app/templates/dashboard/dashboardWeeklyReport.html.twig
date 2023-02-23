@@ -1,47 +1,75 @@
 {% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('heatmap-css') }}
+    {{ encore_entry_link_tags('bootstrap') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('popper') }}
+    {{ encore_entry_script_tags('d3') }}
+    {{ encore_entry_script_tags('calHeatmap') }}
+{% endblock %}
+
 {% block title %}Azubi Bericht!{% endblock %}
 
 {% block body %}
-
-    <div class="cal-heatmap-container">
-
-    </div>
-
     <div class="example-wrapper">
-        <a href="{{ path('add_entry', {id: apprenticeshipId, date: date}) }}" class="btn btn-primary">Neuer Eintrag anlegen</a>
+        <div class="card-body">
+            <h1 class="text-nowrap overflow-hidden">{{ apprenticeship.title }}</h1>
+            <h3>
+                <span>{{ date }}</span>
+                <span class="small text-secondary">{{ user.firstname }} {{ user.lastname }}</span>
+            </h3>
+        </div>
 
-        {% for entry in entries %}
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Aktionen</th>
-                    <th>ID</th>
-                    <th>Date</th>
-                    <th>text</th>
-                    <th>time</th>
-                </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <a href="{{ path('edit_entry', {id: entry.apprenticeshipId.id, date: entry.date, entryid: entry.id }) }}" class="btn btn-primary">Eintrag Bearbeiten</a>
-                            <a href="{{ path('delete_entry', {id: entry.apprenticeshipId.id, date: entry.date, entryId: entry.id}) }}" class="btn btn-primary">Löschen</a>
-                        </td>
-                        <td>
-                            <span>{{ entry.id }}</span>
-                        </td>
-                        <td>
-                            <span>{{ entry.date }}</span>
-                        </td>
-                        <td>
-                            <span>{{ entry.text }}</span>
-                        </td>
-                        <td>
-                            <span>{{ entry.time }}</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        {% endfor %}
+        <div class="card card-body">
+            <div class="heatmap overflow-hidden" class="hidden" data-apprenticeship="{{ apprenticeship.id }}" data-start="{{ apprenticeship.start }}" data-end="{{ apprenticeship.end }}" data-entries="{{ calendar|json_encode }}"></div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+            <a class="btn btn-primary" href="{{ path('add_entry', {id: apprenticeshipId, date: date}) }}">+ Neuer Eintrag</a>
+        </div>
+
+        <table class="table mt-3">
+            <thead>
+            <tr>
+                <th>Aktionen</th>
+                <th>Text</th>
+                <th>Stunden</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td class="text-nowrap">
+                    <a href="{{ path('delete_entry', {id: entry.apprenticeshipId.id, date: date, entryId: entry.id}) }}" class="btn btn-danger">Löschen</a>
+                    <a href="{{ path('edit_entry', {id: entry.apprenticeshipId.id, date: date, entryid: entry.id }) }}" class="btn btn-primary">Bearbeiten</a>
+                </td>
+                <td>
+                    <span>{{ entry.text }}</span>
+                </td>
+                <td>
+                    <span>{{ entry.time }}</span>
+                </td>
+                <td>
+                    {% if entry.status == 1 %}
+                        <span class="badge text-bg-success">Eintrag abgesegnet</span>
+                    {% elseif entry.status == 2 %}
+                        <span class="badge text-bg-danger">Eintrag abgelehnt</span>
+                    {% else %}
+                        <span class="badge text-bg-primary">Eintrag eingereicht</span>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            </tbody>
+        </table>
     </div>
+    <script>
+      window.onload = () => {
+        window.genCalHeatmap2()
+      }
+    </script>
 {% endblock %}
