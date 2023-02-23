@@ -25,13 +25,14 @@ class Heatmap
         $resultArray = [];
         while ($pointerDay->getTimestamp() < $targetTimestamp) {
             $currentEntries = array_filter($entries, static function ($entry) use (&$pointerDay) {
-                return $entry->getDate()?->format('Y-m-d') === $pointerDay->format('Y-m-d');
+                $day = new DateTime($entry->getDate()?->format('Y-m-d'));
+                $day->setTimezone(new DateTimeZone('Europe/London'))->modify('+1 day');
+                return $day->format('Y-m-d') === $pointerDay->format('Y-m-d');
             });
             
             if (count($currentEntries) === 0 && (int)$pointerDay->format('w') > 1) {
                 $resultArray[] = (object)[
-                    $pointerDay->setTimezone(new DateTimeZone('Europe/London')),
-                    'date'  => $pointerDay->format('Y-m-d'),
+                    'date'  => $pointerDay->setTimezone(new DateTimeZone('Europe/Berlin'))->format('Y-m-d'),
                     'value' => HeatmapColor::FEHLEND->value,
                 ];
                 $pointerDay->modify("+1 day");

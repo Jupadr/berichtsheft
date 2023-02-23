@@ -10,9 +10,12 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use http\Exception\RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -154,13 +157,152 @@ class DashboardController extends AbstractController
             
             $em->persist($apprenticeship);
             $em->flush();
-            
             $this->addFlash('success', "Ausbildung erfolgreich angelegt. Der Token lautet $token");
+            
             return $this->redirectToRoute('app_dashboard');
         }
         
         $formView = $form->createView();
         return $this->render('dashboard/dashboardAddAzubi.html.twig', [
+            'form' => $formView,
+        ]);
+    }
+    
+    #[Route('/dashboard/{id}', name: 'overview_dashboard')]
+    public function overviewDashboard(int $id): Response
+    {
+        return new Response('1');
+    }
+    
+    #[Route('/dashboard/{id}/{date}/deleteEntry/{entryId}', name: 'delete_entry')]
+    public function deleteEntry(
+        Request $request,
+        EntityManagerInterface $em,
+        int $id,
+        DateTime $date,
+        int $entryId,
+    ) {
+        $entry = $em->getRepository(Entry::class)->findOneBy(
+            ['id' => $entryId]
+        );
+        
+        $form = $this->createFormBuilder()
+            ->add('delete', CheckboxType::class, [
+                'label'    => 'Ja',
+                'required' => true,
+            ])
+            ->add('submit', SubmitType::class, ['label' => 'Eintrag löschen',])
+            ->getForm();
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($request->get('form')['delete']) {
+                $em->remove($entry);
+                $em->flush();
+                $this->addFlash(
+                    'success',
+                    'Eintrag wurde erfolgreich gelöscht'
+                );
+            } else {
+                $this->addFlash('info', 'Eintrag wurde nicht gelöscht');
+            }
+            return $this->redirectToRoute('app_dashboard_dashboardviewday', [
+                'apprenticeshipId' => $id,
+                'date'             => $date->format('Y-m-d'),
+            ]);
+        }
+        
+        $formView = $form->createView();
+        return $this->render('dashboard/dashboardDeleteEntry.html.twig', [
+            'form' => $formView,
+        ]);
+    }
+    
+    #[Route('/dashboard/{id}/{date}/add', name: 'add_entry')]
+    public function addEntry(
+        EntityManagerInterface $em,
+        int $id,
+        DateTime $date,
+        Request $request,
+    ): Response {
+        $entry = new Entry();
+        $form  = $this->entryForm($entry, DashboardEntrySubmitType::CREATE);
+        $form->handleRequest($request);
+        
+        
+        $apprenticeship = $em->getRepository(Apprenticeship::class)->findOneBy([
+            'id' => $id,
+        ]);
+        
+        if ($form->isSubmitted()) {
+            $entry = new Entry();
+            $entry->setApprenticeshipId($apprenticeship);
+            $entry->setText($request->get('form')['text']);
+            $entry->setTime($request->get('form')['time']);
+            $entry->setDate($date);
+            $entry->setStatus(0);
+            
+            $em->persist($entry);
+            $em->flush();
+            return $this->redirectToRoute('app_dashboard_dashboardviewday', [
+                'apprenticeshipId' => $id,
+                'date'             => $date->format('Y-m-d'),
+            ]);
+        }
+        
+        $formView = $form->createView();
+        return $this->render('dashboard/dashboardCreateNewReport.html.twig', [
+            'form' => $formView,
+        ]);
+    }
+    
+    public function entryForm(Entry $entry, DashboardEntrySubmitType $type): FormInterface
+    {
+        return $this->createFormBuilder($entry)
+            ->add('text', TextType::class, [
+                'label'    => 'text',
+                'required' => true,
+            ])
+            ->add('time', NumberType::class, [
+                'label'    => 'Vorgangsdauer',
+                'required' => true,
+            ])
+            ->add('save', SubmitType::class, [
+                'label' => match ($type) {
+                    DashboardEntrySubmitType::CREATE => 'Eintrag erstellten',
+                    DashboardEntrySubmitType::EDIT => 'Eintrag bearbeiten',
+                },
+            ])
+            ->getForm();
+    }
+    
+    #[Route('/dashboard/{id}/{date}/edit/{entryid}', name: 'edit_entry')]
+    public function editEntry(
+        EntityManagerInterface $em,
+        int $id,
+        int $entryid,
+        DateTime $date,
+        Request $request,
+    ): Response {
+        $entry = $em->getRepository(Entry::class)->find($entryid) ??
+            throw new RuntimeException();
+        
+        $form = $this->entryForm($entry, DashboardEntrySubmitType::EDIT);
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entry = $form->getData();
+            $entry->setStatus(0);
+            
+            $em->persist($entry);
+            $em->flush();
+            return $this->redirectToRoute('app_dashboard_dashboardviewday', [
+                'apprenticeshipId' => $id,
+                'date'             => $date->format('Y-m-d'),
+            ]);
+        }
+        $formView = $form->createView();
+        return $this->render('dashboard/dashboardCreateNewReport.html.twig', [
             'form' => $formView,
         ]);
     }
@@ -360,7 +502,11 @@ class DashboardController extends AbstractController
         DateTime $date,
     ): Response {
         if (in_array('ROLE_AZUBI', $user->getRoles(), true)) {
-            return $this->apprenticeshipAzubiDay($apprenticeshipId);
+            return $this->dailyReport(
+                $em,
+                $apprenticeshipId,
+                $date
+            );
         }
         
         if (in_array('ROLE_AUSBILDER', $user->getRoles(), true)) {
@@ -374,10 +520,44 @@ class DashboardController extends AbstractController
         throw new AccessDeniedHttpException();
     }
     
-    private function apprenticeshipAzubiDay(
-        int $apprenticeshipId,
+    private function dailyReport(
+        EntityManagerInterface $em,
+        int $id,
+        DateTime $date,
     ): Response {
-        return new Response("Work in progress. AUSBILDER ON $apprenticeshipId");
+        $currentDate = $date->format('Y-m-d');
+        
+        $apprenticeship = $em->getRepository(Apprenticeship::class)->find($id)
+            ?? throw new RuntimeException();
+        
+        
+        $entries = $em->getRepository(Entry::class)->findBy([
+            'apprenticeshipId' => $id,
+            'date'             => $date,
+        ]);
+        
+        $ausbilder = $em->getRepository(User::class)->find($apprenticeship->getAusbilderId());
+        
+        $calendar = Heatmap::handleAzubi(
+            $apprenticeship->getStartApprenticeship(),
+            $apprenticeship->getEndApprenticeship(),
+            $apprenticeship->getEntries()->toArray(),
+        );
+        
+        return $this->render('dashboard/dashboardWeeklyReport.html.twig', [
+            'currentDate'      => $currentDate,
+            'user'             => $ausbilder,
+            'entries'          => $entries,
+            'apprenticeshipId' => $id,
+            'date'             => $date->format('Y-m-d'),
+            'apprenticeship'   => (object)[
+                'id'    => $apprenticeship->getId(),
+                'start' => $apprenticeship->getStartApprenticeship()?->format('Y-m-d'),
+                'end'   => $apprenticeship->getEndApprenticeship()?->format('Y-m-d'),
+                'title' => $apprenticeship->getTitle(),
+            ],
+            'calendar'         => $calendar,
+        ]);
     }
     
     private function apprenticeshipAusbilderDay(
@@ -417,5 +597,20 @@ class DashboardController extends AbstractController
             'calendar'       => $calendar,
         ]);
     }
+    
+    private function apprenticeshipAzubiDay(
+        int $apprenticeshipId,
+    ): Response {
+        return new Response("Work in progress. AUSBILDER ON $apprenticeshipId");
+    }
+    
+    
+}
+
+enum DashboardEntrySubmitType
+{
+    
+    case CREATE;
+    case EDIT;
     
 }

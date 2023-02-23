@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ encore_entry_link_tags('bootstrap') }}
+{% endblock %}
+
+{% block body %}
+    <div class="example-wrapper">
+        <h1>Eintrag löschen</h1>
+
+        <b>Sind Sie sicher, dass Sie diesen Eintrag löschen möchten?</b>
+        {{ form_start(form) }}
+        {{ form_widget(form) }}
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

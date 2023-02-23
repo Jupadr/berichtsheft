@@ -120,6 +120,8 @@ class RegistrationController extends AbstractController
             $em->persist($user);
             $em->flush();
             
+            $apprenticeship->setAzubiId($user->getId());
+            
             $em->persist($apprenticeship);
             $em->flush();
             
