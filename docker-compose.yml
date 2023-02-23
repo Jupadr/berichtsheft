@@ -26,8 +26,6 @@ services:
       dockerfile: php.Dockerfile
     volumes:
       - ./app:/app
-      - /app/vendor
-      - ./app:/app:cached
       - ./opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
       - ./xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
     environment:
@@ -50,4 +48,3 @@ services:
 
 volumes:
   mysqldata: {}
-
