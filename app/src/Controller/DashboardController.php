@@ -6,18 +6,14 @@ use App\Berichtsheft\Heatmap;
 use App\Entity\Apprenticeship;
 use App\Entity\Entry;
 use App\Entity\User;
-use App\Entity\Entry;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use http\Exception\RuntimeException;
-use PHPUnit\Util\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -143,14 +139,14 @@ class DashboardController extends AbstractController
             $ausbilder = $em->getRepository(User::class)->findOneBy([
                 'username' => $user->getUserIdentifier(),
             ]);
-
+            
             $token = new UuidV4();
             $token = $token->toRfc4122();
-
+            
             if ($ausbilder === null) {
                 throw new RuntimeException();
             }
-
+            
             $apprenticeship = new Apprenticeship();
             $apprenticeship->setTitle($request->get('form')['title']);
             $apprenticeship->setCompanyName($request->get('form')['company_name']);
@@ -158,11 +154,11 @@ class DashboardController extends AbstractController
             $apprenticeship->setEndApprenticeship(new DateTime($request->get('form')['end_apprenticeship']));
             $apprenticeship->setAusbilderId($ausbilder->getId());
             $apprenticeship->setInviteToken($token);
-
+            
             $em->persist($apprenticeship);
             $em->flush();
             $this->addFlash('success', "Ausbildung erfolgreich angelegt. Der Token lautet $token");
-
+            
             return $this->redirectToRoute('app_dashboard');
         }
         
@@ -171,14 +167,13 @@ class DashboardController extends AbstractController
             'form' => $formView,
         ]);
     }
-
-    #[Route('/dashboard/{id}', name:'overview_dashboard')]
+    
+    #[Route('/dashboard/{id}', name: 'overview_dashboard')]
     public function overviewDashboard(int $id): Response
     {
         return new Response('1');
-
     }
-
+    
     #[Route('/dashboard/{id}/{date}', name: 'report_dashboard')]
     public function dailyReport(
         EntityManagerInterface $em,
@@ -187,24 +182,25 @@ class DashboardController extends AbstractController
     ): Response {
         $entries = $em->getRepository(Entry::class)->findBy([
             'apprenticeshipId' => $id,
-            'date' => $date,
-            ]);
-        $entries = array_map(function($entry) {
-           return (object)[
-             'id' => $entry->getId(),
-             'apprenticeshipId' => $entry->getApprenticeshipId(),
-             'date' => $entry->getDate()->format('Y-m-d'),
-             'time' => $entry->getTime(),
-             'text' => $entry->getText(),
-           ];
+            'date'             => $date,
+        ]);
+        $entries = array_map(function ($entry) {
+            return (object)[
+                'id'               => $entry->getId(),
+                'apprenticeshipId' => $entry->getApprenticeshipId(),
+                'date'             => $entry->getDate()->format('Y-m-d'),
+                'time'             => $entry->getTime(),
+                'text'             => $entry->getText(),
+            ];
         }, $entries);
         return $this->render('dashboard/dashboardWeeklyReport.html.twig', [
-            'entries' => $entries,
+            'entries'          => $entries,
             'apprenticeshipId' => $id,
-            'date' => $date->format('Y-m-d'),
+            'date'             => $date->format('Y-m-d'),
         ]);
     }
-    #[Route('/dashboard/{id}/{date}/deleteEntry/{entryId}', name:'delete_entry')]
+    
+    #[Route('/dashboard/{id}/{date}/deleteEntry/{entryId}', name: 'delete_entry')]
     public function deleteEntry(
         Request $request,
         ManagerRegistry $doctrine,
@@ -212,12 +208,11 @@ class DashboardController extends AbstractController
         int $id,
         DateTime $date,
         int $entryId,
-    )
-    {
+    ) {
         $entry = $doctrine->getRepository(Entry::class)->findOneBy(
             ['id' => $entryId]
         );
-
+        
         $form = $this->createFormBuilder()
             ->add('delete', CheckboxType::class, [
                 'label'    => 'Ja',
@@ -226,7 +221,7 @@ class DashboardController extends AbstractController
             ->add('submit', SubmitType::class, ['label' => 'Eintrag löschen',])
             ->getForm();
         $form->handleRequest($request);
-
+        
         if ($form->isSubmitted() && $form->isValid()) {
             if ($request->get('form')['delete']) {
                 $em->remove($entry);
@@ -238,38 +233,19 @@ class DashboardController extends AbstractController
             } else {
                 $this->addFlash('info', 'Eintrag wurde nicht gelöscht');
             }
-            return $this->redirectToRoute('report_dashboard', array(
-                'id' => $id,
-                'date' => $date->format('Y-m-d')
-            ));
+            return $this->redirectToRoute('report_dashboard', [
+                'id'   => $id,
+                'date' => $date->format('Y-m-d'),
+            ]);
         }
-
+        
         $formView = $form->createView();
         return $this->render('dashboard/dashboardDeleteEntry.html.twig', [
             'form' => $formView,
         ]);
     }
-
-    public function entryForm(Entry $entry, DashboardEntrySubmitType $type): FormInterface
-    {
-        return $this->createFormBuilder($entry)
-            ->add('text', TextType::class, [
-                'label' => 'text',
-                'required' => true,
-            ])
-            ->add('time', NumberType::class, [
-                'label'    => 'Vorgangsdauer',
-                'required' => true
-            ])
-            ->add('save', SubmitType::class, [
-                'label' => match ($type) {
-                    DashboardEntrySubmitType::CREATE => 'Eintrag erstellten',
-                    DashboardEntrySubmitType::EDIT => 'Eintrag bearbeiten',
-                },
-            ])
-            ->getForm();
-    }
-    #[Route('/dashboard/{id}/{date}/add', name:'add_entry')]
+    
+    #[Route('/dashboard/{id}/{date}/add', name: 'add_entry')]
     public function addEntry
     (
         ManagerRegistry $doctrine,
@@ -279,35 +255,55 @@ class DashboardController extends AbstractController
         Request $request,
     ): Response {
         $entry = new Entry();
-        $form = $this->entryForm($entry, DashboardEntrySubmitType::CREATE);
+        $form  = $this->entryForm($entry, DashboardEntrySubmitType::CREATE);
         $form->handleRequest($request);
-
-
+        
+        
         $apprenticeship = $em->getRepository(Apprenticeship::class)->findOneBy([
-           'id' => $id,
+            'id' => $id,
         ]);
-
+        
         if ($form->isSubmitted()) {
             $entry = new Entry();
             $entry->setApprenticeshipId($apprenticeship);
             $entry->setText($request->get('form')['text']);
             $entry->setTime($request->get('form')['time']);
             $entry->setDate($date);
-
+            
             $em->persist($entry);
             $em->flush();
-            return $this->redirectToRoute('report_dashboard', array(
-                'id' => $id,
-                'date' => $date->format('Y-m-d')
-            ));
+            return $this->redirectToRoute('report_dashboard', [
+                'id'   => $id,
+                'date' => $date->format('Y-m-d'),
+            ]);
         }
         $formView = $form->createView();
         return $this->render('dashboard/dashboardCreateNewReport.html.twig', [
             'form' => $form,
         ]);
     }
-
-    #[Route('/dashboard/{id}/{date}/edit/{entryid}', name:'edit_entry')]
+    
+    public function entryForm(Entry $entry, DashboardEntrySubmitType $type): FormInterface
+    {
+        return $this->createFormBuilder($entry)
+            ->add('text', TextType::class, [
+                'label'    => 'text',
+                'required' => true,
+            ])
+            ->add('time', NumberType::class, [
+                'label'    => 'Vorgangsdauer',
+                'required' => true,
+            ])
+            ->add('save', SubmitType::class, [
+                'label' => match ($type) {
+                    DashboardEntrySubmitType::CREATE => 'Eintrag erstellten',
+                    DashboardEntrySubmitType::EDIT => 'Eintrag bearbeiten',
+                },
+            ])
+            ->getForm();
+    }
+    
+    #[Route('/dashboard/{id}/{date}/edit/{entryid}', name: 'edit_entry')]
     public function editEntry
     (
         ManagerRegistry $doctrine,
@@ -320,19 +316,19 @@ class DashboardController extends AbstractController
         $entry = $doctrine->getRepository(Entry::class)->findOneBy(
             ['id' => $entryid]
         );
-
+        
         $form = $this->entryForm($entry, DashboardEntrySubmitType::EDIT);
         $form->handleRequest($request);
-
+        
         if ($form->isSubmitted() && $form->isValid()) {
             $entry = $form->getData();
-
+            
             $em->persist($entry);
             $em->flush();
-            return $this->redirectToRoute('report_dashboard', array(
-                'id' => $id,
-                'date' => $date->format('Y-m-d')
-            ));
+            return $this->redirectToRoute('report_dashboard', [
+                'id'   => $id,
+                'date' => $date->format('Y-m-d'),
+            ]);
         }
         $formView = $form->createView();
         return $this->render('dashboard/dashboardCreateNewReport.html.twig', [
@@ -592,13 +588,14 @@ class DashboardController extends AbstractController
             'calendar'       => $calendar,
         ]);
     }
-
+    
     
 }
+
 enum DashboardEntrySubmitType
 {
-
+    
     case CREATE;
     case EDIT;
-
+    
 }
