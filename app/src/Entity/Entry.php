@@ -27,6 +27,9 @@ class Entry
     #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 1)]
     private ?string $time = null;
 
+    #[ORM\Column]
+    private ?int $status = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -76,6 +79,18 @@ class Entry
     public function setTime(string $time): self
     {
         $this->time = $time;
+
+        return $this;
+    }
+
+    public function getStatus(): ?int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

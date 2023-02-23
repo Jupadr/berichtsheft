@@ -2,12 +2,13 @@
 
 namespace App\Controller;
 
+use App\Berichtsheft\Heatmap;
 use App\Entity\Apprenticeship;
+use App\Entity\Entry;
 use App\Entity\User;
 use App\Entity\Entry;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Persistence\ManagerRegistry;
 use http\Exception\RuntimeException;
 use PHPUnit\Util\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,54 +32,24 @@ use Symfony\Component\Uid\UuidV4;
 class DashboardController extends AbstractController
 {
     
-    //    #[Route('dashboard/createApprenticeship', name: 'create_apprenticeship')]
-    //    public function saveApprenticeship(
-    //        Request $request,
-    //        ManagerRegistry $doctrine,
-    //        EntityManagerInterface $em,
-    //        UserInterface $user,
-    //    ): Response {
-    //        $uuid           = Uuid::v4();
-    //        $apprenticeship = new Apprenticeship();
-    //        $apprenticeship->setInviteToken($uuid->toRfc4122());
-    //        if (in_array('ROLE_AUSBILDER', $user->getRoles(), true)) {
-    //            $apprenticeship->setInstructorId($user);
-    //        }
-    //        $form = $this->addAzubi($apprenticeship);
-    //        $form->handleRequest($request);
-    //        if ($form->isSubmitted() && $form->isValid()) {
-    //            var_dump($form->getData());
-    //            $apprenticeship = $form->getData();
-    //            $em->persist($apprenticeship);
-    //            $em->flush();
-    //            $this->addFlash('success', 'Ausbildung angelegt');
-    //        }
-    //        $formView = $form->createView();
-    //        return $this->render('dashboard/dashboardAddAzubi.html.twig', [
-    //            'form' => $formView,
-    //        ]);
-    //    }
-    
     #[Route('/dashboard/add', name: 'app_dashboard_add')]
     public function dashboardAdd(
         Request $request,
-        ManagerRegistry $doctrine,
         EntityManagerInterface $em,
         UserInterface $user
     ): Response {
         if (in_array('ROLE_AZUBI', $user->getRoles(), true)) {
-            return $this->dashboardAddAzubi($doctrine, $em, $user, $request);
+            return $this->dashboardAddAzubi($em, $user, $request);
         }
         
         if (in_array('ROLE_AUSBILDER', $user->getRoles(), true)) {
-            return $this->dashboardAddAusbilder($doctrine, $em, $user, $request);
+            return $this->dashboardAddAusbilder($em, $user, $request);
         }
         
         throw new AccessDeniedHttpException();
     }
     
     private function dashboardAddAzubi(
-        ManagerRegistry $doctrine,
         EntityManagerInterface $em,
         UserInterface $user,
         Request $request,
@@ -140,7 +111,6 @@ class DashboardController extends AbstractController
     }
     
     private function dashboardAddAusbilder(
-        ManagerRegistry $doctrine,
         EntityManagerInterface $em,
         UserInterface $user,
         Request $request,
@@ -372,7 +342,6 @@ class DashboardController extends AbstractController
     
     #[Route('/dashboard', name: 'app_dashboard')]
     public function index(
-        ManagerRegistry $doctrine,
         EntityManagerInterface $em,
         UserInterface $user
     ): Response {
@@ -394,12 +363,25 @@ class DashboardController extends AbstractController
             foreach ($apprenticeships as $apprenticeship) {
                 $ausbilder = $em->getRepository(User::class)->find($apprenticeship->getAusbilderId());
                 
+                $entries = Heatmap::handleAzubi(
+                    $apprenticeship->getStartApprenticeship(),
+                    $apprenticeship->getEndApprenticeship(),
+                    $apprenticeship->getEntries()->toArray(),
+                );
+                
+                $unread = array_filter($entries, static function ($entry) {
+                    return $entry->value !== 14;
+                });
+                
                 $targetArray[] = (object)[
                     'id'        => $apprenticeship->getId(),
                     'title'     => $apprenticeship->getTitle(),
                     'firstname' => $ausbilder?->getFirstname(),
                     'lastname'  => $ausbilder?->getLastname(),
-                    'unread'    => '99+',
+                    'unread'    => count($unread),
+                    'start'     => $apprenticeship->getStartApprenticeship()?->format('Y-m-d'),
+                    'end'       => $apprenticeship->getEndApprenticeship()?->format('Y-m-d'),
+                    'entries'   => $entries,
                 ];
             }
             
@@ -422,13 +404,26 @@ class DashboardController extends AbstractController
                     $azubi = $em->getRepository(User::class)->find($apprenticeship->getAzubiId());
                 }
                 
+                $entries = Heatmap::handleAzubi(
+                    $apprenticeship->getStartApprenticeship(),
+                    $apprenticeship->getEndApprenticeship(),
+                    $apprenticeship->getEntries()->toArray(),
+                );
+                
+                $unread = array_filter($entries, static function ($entry) {
+                    return $entry->value === 22;
+                });
+                
                 $targetArray[] = (object)[
                     'id'        => $apprenticeship->getId(),
                     'azubiId'   => $azubi?->getId(),
                     'firstname' => $azubi?->getFirstname(),
                     'lastname'  => $azubi?->getLastname(),
-                    'unread'    => '99+',
+                    'unread'    => count($unread),
                     'token'     => $apprenticeship->getInviteToken(),
+                    'start'     => $apprenticeship->getStartApprenticeship()?->format('Y-m-d'),
+                    'end'       => $apprenticeship->getEndApprenticeship()?->format('Y-m-d'),
+                    'entries'   => $entries,
                 ];
             }
             
@@ -442,38 +437,160 @@ class DashboardController extends AbstractController
     
     #[Route('/dashboard/{apprenticeshipId}')]
     public function dashboardApprenticeship(
-        ManagerRegistry $doctrine,
-        EntityManagerInterface $em,
         UserInterface $user,
         int $apprenticeshipId
     ): Response {
         if (in_array('ROLE_AZUBI', $user->getRoles(), true)) {
-            return $this->apprenticeshipAzubi($doctrine, $em, $user, $apprenticeshipId);
+            return $this->apprenticeshipAzubi($apprenticeshipId);
         }
         
         if (in_array('ROLE_AUSBILDER', $user->getRoles(), true)) {
-            return $this->apprenticeshipAusbilder($doctrine, $em, $user, $apprenticeshipId);
+            return $this->apprenticeshipAusbilder($apprenticeshipId);
         }
         
         throw new AccessDeniedHttpException();
     }
     
     private function apprenticeshipAzubi(
-        ManagerRegistry $doctrine,
-        EntityManagerInterface $em,
-        UserInterface $user,
         int $apprenticeshipId
     ): Response {
-        return new Response('Work in progress');
+        return new Response("Work in progress. AZUBI ON $apprenticeshipId");
     }
     
     private function apprenticeshipAusbilder(
-        ManagerRegistry $doctrine,
-        EntityManagerInterface $em,
-        UserInterface $user,
         int $apprenticeshipId
     ): Response {
-        return new Response('Work in progress');
+        return new Response("Work in progress. AUSBILDER ON $apprenticeshipId");
+    }
+    
+    #[Route('/dashboard/{apprenticeshipId}/{date}/accept/${entryId}', name: 'app_dashboard_dashboardviewday_accept')]
+    public function dashboardViewDayAccept(
+        EntityManagerInterface $em,
+        UserInterface $user,
+        int $entryId,
+        int $apprenticeshipId,
+        DateTime $date,
+    ): Response {
+        $entry = $em->getRepository(Entry::class)->find($entryId) ??
+            throw new RuntimeException();
+        
+        $apprenticeship = $entry->getApprenticeshipId() ?? throw new RuntimeException();
+        
+        $ausbilderId = $em->getRepository(User::class)->findOneBy([
+            'username' => $user->getUserIdentifier(),
+        ])?->getId() ?? throw new RuntimeException();
+        
+        if (in_array('ROLE_AUSBILDER', $user->getRoles(), true) && $apprenticeship->getAusbilderId() === $ausbilderId) {
+            $entry->setStatus(1);
+            $em->persist($entry);
+            $em->flush();
+            $this->addFlash('success', 'Eintrag erfolgreich abgesegnet.');
+        } else {
+            throw new AccessDeniedHttpException();
+        }
+        
+        return $this->redirectToRoute('app_dashboard_dashboardviewday', [
+            'apprenticeshipId' => $apprenticeshipId,
+            'date'             => $date->format('Y-m-d'),
+        ]);
+    }
+    
+    #[Route('/dashboard/{apprenticeshipId}/{date}/deny/${entryId}', name: 'app_dashboard_dashboardviewday_deny')]
+    public function dashboardViewDayDeny(
+        EntityManagerInterface $em,
+        UserInterface $user,
+        int $entryId,
+        int $apprenticeshipId,
+        DateTime $date,
+    ): Response {
+        $entry = $em->getRepository(Entry::class)->find($entryId) ??
+            throw new RuntimeException();
+        
+        $apprenticeship = $entry->getApprenticeshipId() ?? throw new RuntimeException();
+        
+        $ausbilderId = $em->getRepository(User::class)->findOneBy([
+            'username' => $user->getUserIdentifier(),
+        ])?->getId() ?? throw new RuntimeException();
+        
+        if (in_array('ROLE_AUSBILDER', $user->getRoles(), true) && $apprenticeship->getAusbilderId() === $ausbilderId) {
+            $entry->setStatus(2);
+            $em->persist($entry);
+            $em->flush();
+            $this->addFlash('success', 'Eintrag erfolgreich abgesegnet.');
+        } else {
+            throw new AccessDeniedHttpException();
+        }
+        
+        return $this->redirectToRoute('app_dashboard_dashboardviewday', [
+            'apprenticeshipId' => $apprenticeshipId,
+            'date'             => $date->format('Y-m-d'),
+        ]);
+    }
+    
+    #[Route('/dashboard/{apprenticeshipId}/{date}', name: 'app_dashboard_dashboardviewday')]
+    public function dashboardViewDay(
+        EntityManagerInterface $em,
+        UserInterface $user,
+        int $apprenticeshipId,
+        DateTime $date,
+    ): Response {
+        if (in_array('ROLE_AZUBI', $user->getRoles(), true)) {
+            return $this->apprenticeshipAzubiDay($apprenticeshipId);
+        }
+        
+        if (in_array('ROLE_AUSBILDER', $user->getRoles(), true)) {
+            return $this->apprenticeshipAusbilderDay(
+                $em,
+                $apprenticeshipId,
+                $date
+            );
+        }
+        
+        throw new AccessDeniedHttpException();
+    }
+    
+    private function apprenticeshipAzubiDay(
+        int $apprenticeshipId,
+    ): Response {
+        return new Response("Work in progress. AUSBILDER ON $apprenticeshipId");
+    }
+    
+    private function apprenticeshipAusbilderDay(
+        EntityManagerInterface $em,
+        int $apprenticeshipId,
+        DateTime $date,
+    ): Response {
+        $currentDate = $date->format('Y-m-d');
+        
+        $apprenticeship = $em->getRepository(Apprenticeship::class)->find($apprenticeshipId) ??
+            throw new RuntimeException();
+        
+        $entries = $em->getRepository(Entry::class)->findBy([
+            'apprenticeshipId' => $apprenticeshipId,
+            'date'             => $date,
+        ]);
+        
+        $azubi = $em->getRepository(User::class)->find($apprenticeship->getAzubiId()) ??
+            throw new RuntimeException();
+        
+        $calendar = Heatmap::handleAzubi(
+            $apprenticeship->getStartApprenticeship(),
+            $apprenticeship->getEndApprenticeship(),
+            $apprenticeship->getEntries()->toArray(),
+        );
+        
+        return $this->render('dashboard/dashboardAusbilderDay.html.twig', [
+            'currentDate'    => $currentDate,
+            'user'           => $azubi,
+            'entries'        => $entries,
+            'date'           => $date->format('Y-m-d'),
+            'apprenticeship' => (object)[
+                'id'    => $apprenticeship->getId(),
+                'start' => $apprenticeship->getStartApprenticeship()?->format('Y-m-d'),
+                'end'   => $apprenticeship->getEndApprenticeship()?->format('Y-m-d'),
+            ],
+            'calendar'       => $calendar,
+        ]);
     }
 
     
