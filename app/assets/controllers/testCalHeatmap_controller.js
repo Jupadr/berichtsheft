@@ -9,9 +9,11 @@ window.genCalHeatmap2 = function () {
     let end = element.dataset.end
     let entries = JSON.parse(element.dataset.entries)
     
+    console.log(entries)
+    
     let cal = new CalHeatmap()
     
-    cal.on('click', (event, timestamp, value) => {
+    cal.on('click', (event, timestamp) => {
       let date = new Date(timestamp + 36000)
       let isoDate = date.toISOString().slice(0, 10)
       window.location.assign(`/dashboard/${apprenticeshipId}/${isoDate}`)
@@ -101,7 +103,7 @@ window.genCalHeatmap = function () {
   let cal = new CalHeatmap()
   let calData = JSON.parse(document.getElementById('cal-data').innerText)
   
-  cal.on('click', (event, timestamp, value) => {
+  cal.on('click', (event, timestamp) => {
     let el = document.getElementById('day-sign')
     
     let date = new Date(timestamp)
