@@ -1,9 +1,61 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+    {{ encore_entry_link_tags('heatmap-css') }}
+    {{ encore_entry_link_tags('bootstrap') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('popper') }}
+    {{ encore_entry_script_tags('d3') }}
+    {{ encore_entry_script_tags('calHeatmap') }}
+{% endblock %}
+
 {% block title %}Hello DashboardController!{% endblock %}
 
 {% block body %}
     <div class="example-wrapper">
         <h1>Azubi-Dashboard</h1>
+        <hr/>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a class="btn btn-primary" href="{{ path('app_dashboard_add') }}">+ Neue Ausbildung</a>
+        </div>
+
+        {% for entry in apprenticeships %}
+            <div class="card mt-3">
+                {% if entry.unread > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ entry.unread }}
+                        <span class="visually-hidden">unbearbeitete Tage</span>
+                    </span>
+                {% endif %}
+                <div class="card-header">
+                    <ul class="nav nav-pills card-header-pills">
+                        <li class="nav-item">
+                            <span class="nav-link text-black">{{ entry.title }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <span class="nav-link text-secondary">{{ entry.firstname }} {{ entry.lastname }}</span>
+                        </li>
+                        {#                        <li class="nav-item"> #}
+                        {#                            <a class="nav-link" href="{{ path('app_dashboard') }}/{{ entry.id }}">Öffnen</a> #}
+                        {#                        </li> #}
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="heatmap overflow-hidden" class="hidden" data-apprenticeship="{{ entry.id }}" data-start="{{ entry.start }}" data-end="{{ entry.end }}" data-entries="{{ entry.entries|json_encode }}"></div>
+                </div>
+            </div>
+        {% endfor %}
+        {% if apprenticeships|length == 0 %}
+            <div class="text-center text-secondary">
+                <span>Keine Ausbildungen vorhanden</span>
+            </div>
+        {% endif %}
     </div>
+    <script>
+      window.onload = () => {
+        window.genCalHeatmap2()
+      }
+    </script>
 {% endblock %}

@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class AdministrationController extends AbstractController
 {
@@ -31,19 +32,21 @@ class AdministrationController extends AbstractController
     }
     
     #[Route('/administration/apprenticeships', name: 'administration_apprenticeships')]
-    public function listApprenticeships(ManagerRegistry $doctrine): Response
+    public function listApprenticeships(EntityManagerInterface $em): Response
     {
-        $apprenticeships = $doctrine->getRepository(Apprenticeship::class)->findAll();
+        $apprenticeships = $em->getRepository(Apprenticeship::class)->findAll();
         
         $list = [];
         
         foreach ($apprenticeships as $apprenticeship) {
             $list[] = (object)[
                 'apprenticeship' => $apprenticeship,
-                'azubi'          => $doctrine->getRepository(User::class)->find($apprenticeship->getAzubiId())
-                        ?->getUsername() ?? '--',
-                'ausbilder'      => $doctrine->getRepository(User::class)->find($apprenticeship->getAusbilderId())
-                        ?->getUsername() ?? '--',
+                'azubi'          => $apprenticeship->getAzubiId() !== null ? $em->getRepository(User::class)->find(
+                    $apprenticeship->getAzubiId()
+                )
+                    ?->getUsername() : null,
+                'ausbilder'      => $em->getRepository(User::class)->find($apprenticeship->getAusbilderId())
+                    ?->getUsername(),
             ];
         }
         
@@ -112,6 +115,7 @@ class AdministrationController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         ManagerRegistry $doctrine,
         EntityManagerInterface $em,
+        UserInterface $userTot,
         int $userId
     ): Response {
         $user = $doctrine->getRepository(User::class)->findOneBy(
@@ -131,7 +135,7 @@ class AdministrationController extends AbstractController
             $newUser        = $form->getData();
             $passwordRepeat = $request->get('form')['password_repeat'];
             
-            if ($newUser->getPassword() !== ''
+            if (!empty($newUser->getPassword())
                 && $newUser->getPassword() === $passwordRepeat
             ) {
                 $hashedPassword = $passwordHasher->hashPassword(
@@ -139,13 +143,15 @@ class AdministrationController extends AbstractController
                     $newUser->getPassword()
                 );
                 $newUser->setPassword($hashedPassword);
-            } elseif ($user->getPassword() !== '') {
+            } elseif (!empty($newUser->getPassword())) {
                 $this->addFlash('error', 'Passwörter müssen übereinstimmen');
                 
                 $formView = $form->createView();
                 return $this->render('administration/changeUser.html.twig', [
                     'form' => $formView,
                 ]);
+            } else {
+                $newUser->setPassword($userTot->getPassword());
             }
             $em->persist($newUser);
             $em->flush();

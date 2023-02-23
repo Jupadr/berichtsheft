@@ -1,12 +1,68 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+    {{ encore_entry_link_tags('heatmap-css') }}
+    {{ encore_entry_link_tags('bootstrap') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('popper') }}
+    {{ encore_entry_script_tags('d3') }}
+    {{ encore_entry_script_tags('calHeatmap') }}
+{% endblock %}
+
 {% block title %}Hello DashboardController!{% endblock %}
 
 {% block body %}
     <div class="example-wrapper">
         <h1>Ausbilder-Dashboard</h1>
-        <ul>
-            <li class="list-group-item"><a href="{{ path('create_apprenticeship')}}">Einladungs Link</a></li>
-        </ul>
+        <hr/>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a class="btn btn-primary" href="{{ path('app_dashboard_add') }}">+ Neue Ausbildung</a>
+        </div>
+
+        {% for apprenticeship in apprenticeships %}
+            <div class="card mt-3">
+                {% if apprenticeship.unread > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ apprenticeship.unread }}
+                        <span class="visually-hidden">unbearbeitete Tage</span>
+                    </span>
+                {% endif %}
+                <div class="card-header">
+                    <ul class="nav nav-pills card-header-pills">
+                        <li class="nav-item">
+                            {% if apprenticeship.azubiId != null %}
+                                <span class="nav-link text-black">{{ apprenticeship.firstname }} {{ apprenticeship.lastname }}</span>
+                            {% endif %}
+                        </li>
+                        <li class="nav-item">
+                            {% if apprenticeship.azubiId != null %}
+                                {#                                <a class="nav-link" href="{{ path('app_dashboard') }}/{{ apprenticeship.id }}">Öffnen</a> #}
+                            {% else %}
+                                <span class="nav-link text-black">Ausbildungstoken noch nicht eingelöst</span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    {% if apprenticeship.azubiId != null %}
+                        <div class="heatmap overflow-hidden" class="hidden" data-apprenticeship="{{ apprenticeship.id }}" data-start="{{ apprenticeship.start }}" data-end="{{ apprenticeship.end }}" data-entries="{{ apprenticeship.entries|json_encode }}"></div>
+                    {% else %}
+                        Token: <code>{{ apprenticeship.token }}</code>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        {% if apprenticeships|length == 0 %}
+            <div class="text-center text-secondary">
+                <span>Keine Ausbildungen vorhanden</span>
+            </div>
+        {% endif %}
     </div>
+    <script>
+      window.onload = () => {
+        window.genCalHeatmap2()
+      }
+    </script>
 {% endblock %}
